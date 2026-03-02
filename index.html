@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>易 И Цзин — Журнал</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+:root {
+  --bg:#f5f0e8;--surface:#faf7f2;--surface2:#f0ebe0;
+  --border:#d8cdb8;--border-light:#e8e0d0;
+  --ink:#2a2218;--ink-mid:#5a5040;--ink-dim:#9a8e7a;
+  --gold:#8b6914;--gold-l:#c4991e;--red:#8b2020;
+  --sh:rgba(42,34,24,.08);--sh-md:rgba(42,34,24,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:'Lora',Georgia,serif;min-height:100vh;}
+
+/* ── HEADER ── */
+header{background:var(–surface);border-bottom:1px solid var(–border);padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px var(–sh);}
+.logo-wrap{display:flex;align-items:center;gap:.9rem;}
+.logo-char{font-family:‘Noto Serif SC’,serif;font-size:2.1rem;color:var(–gold);line-height:1;}
+.logo-text h1{font-family:‘Playfair Display’,serif;font-size:1.05rem;font-weight:600;}
+.logo-text p{font-size:.67rem;color:var(–ink-dim);letter-spacing:.18em;text-transform:uppercase;font-style:italic;}
+.nav-tabs{display:flex;gap:.1rem;}
+.nav-tab{background:none;border:none;font-family:‘Lora’,serif;font-size:.81rem;color:var(–ink-dim);padding:.42rem .95rem;cursor:pointer;border-radius:2px;letter-spacing:.05em;transition:all .15s;}
+.nav-tab:hover{color:var(–gold);background:rgba(139,105,20,.06);}
+.nav-tab.active{color:var(–gold);background:rgba(139,105,20,.1);}
+
+/* ── LAYOUT ── */
+.panel{display:none;}.panel.active{display:block;}
+.container{max-width:760px;margin:0 auto;padding:2rem 1.5rem;}
+.container-wide{max-width:960px;margin:0 auto;padding:2rem 1.5rem;}
+.sec-title{font-family:‘Playfair Display’,serif;font-size:.8rem;font-weight:400;color:var(–ink-dim);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.9rem;padding-bottom:.5rem;border-bottom:1px solid var(–border-light);}
+label.fl{display:block;font-size:.67rem;letter-spacing:.18em;text-transform:uppercase;color:var(–ink-dim);margin-bottom:.4rem;}
+textarea,input[type=text],input[type=number],input[type=datetime-local],select{width:100%;background:var(–surface);border:1px solid var(–border);color:var(–ink);font-family:‘Lora’,serif;font-size:.91rem;padding:.68rem .9rem;outline:none;transition:border-color .15s,box-shadow .15s;border-radius:1px;}
+textarea:focus,input:focus,select:focus{border-color:var(–gold);box-shadow:0 0 0 2px rgba(139,105,20,.1);}
+textarea{resize:vertical;}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.62rem 1.25rem;font-family:‘Lora’,serif;font-size:.84rem;letter-spacing:.06em;cursor:pointer;border-radius:1px;transition:all .15s;border:1px solid transparent;}
+.btn-primary{background:var(–gold);color:#fff;border-color:var(–gold);}
+.btn-primary:hover{background:var(–gold-l);}
+.btn-primary:disabled{opacity:.38;cursor:not-allowed;}
+.btn-outline{background:none;color:var(–gold);border-color:var(–border);}
+.btn-outline:hover{border-color:var(–gold);background:rgba(139,105,20,.05);}
+.btn-ghost{background:none;border:none;color:var(–ink-dim);font-family:‘Lora’,serif;font-size:.8rem;padding:.4rem .7rem;cursor:pointer;transition:color .15s;}
+.btn-ghost:hover{color:var(–red);}
+
+/* ── CAST BUTTON ── */
+.btn-cast{width:100%;padding:.9rem;font-family:‘Playfair Display’,serif;font-size:1.05rem;font-weight:600;font-style:italic;background:var(–surface);border:1px solid var(–border);color:var(–gold);cursor:pointer;transition:all .2s;letter-spacing:.05em;box-shadow:0 2px 8px var(–sh);}
+.btn-cast:hover{border-color:var(–gold);background:rgba(139,105,20,.04);box-shadow:0 4px 16px var(–sh-md);}
+.btn-cast:active{transform:scale(.99);}
+.btn-cast:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* ── COIN ROW ── */
+.coin-strip{display:flex;justify-content:center;gap:1.5rem;padding:1rem 0;min-height:80px;align-items:center;}
+
+/* SVG coin */
+.coin-wrap{opacity:0;transition:opacity .25s,transform .25s;transform:translateY(6px);display:flex;flex-direction:column;align-items:center;}
+.coin-wrap.show{opacity:1;transform:translateY(0);}
+.coin-svg{width:48px;height:48px;border-radius:50%;box-shadow:0 2px 10px var(–sh-md);transition:all .22s;}
+
+/* ── LINE ROW ── */
+.lines-visual{display:flex;flex-direction:column;gap:.48rem;margin:1rem 0;}
+.line-vis-row{display:flex;align-items:center;gap:.9rem;opacity:0;transform:translateY(3px);transition:all .25s;}
+.line-vis-row.show{opacity:1;transform:translateY(0);}
+.line-vis-num{width:20px;font-size:.66rem;color:var(–ink-dim);text-align:right;}
+.line-vis-sym{display:flex;align-items:center;gap:5px;flex:1;height:14px;}
+.bar-yang{height:3px;background:var(–ink);border-radius:1px;flex:1;max-width:130px;}
+.bar-yin{height:3px;background:var(–ink-mid);border-radius:1px;flex:1;max-width:52px;}
+.bar-gap{width:14px;}
+.bar-m{background:var(–red)!important;}
+.line-vis-tag{font-size:.69rem;color:var(–ink-dim);min-width:82px;font-style:italic;}
+.line-vis-tag.mv{color:var(–red);}
+
+/* ── HEX DISPLAY ── */
+.hex-display{display:flex;align-items:center;justify-content:center;gap:2rem;padding:1.3rem 0;flex-wrap:wrap;}
+.hex-card{text-align:center;padding:1rem 1.5rem;background:var(–surface);border:1px solid var(–border);box-shadow:0 2px 10px var(–sh);}
+.hex-glyph{font-family:‘Noto Serif SC’,serif;font-size:3.5rem;color:var(–gold);display:block;line-height:1.1;}
+.hex-num{font-size:.65rem;letter-spacing:.2em;color:var(–ink-dim);text-transform:uppercase;margin-top:.3rem;}
+.hex-cn{font-family:‘Noto Serif SC’,serif;font-size:1.05rem;color:var(–ink-mid);}
+.hex-ru{font-family:‘Playfair Display’,serif;font-size:.93rem;color:var(–ink);font-style:italic;}
+.hex-arrow{font-size:1.3rem;color:var(–red);opacity:.5;align-self:center;}
+
+/* ── AUTOSAVE BADGE ── */
+.autosave-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;color:var(–gold);letter-spacing:.08em;padding:.3rem .7rem;background:rgba(139,105,20,.08);border:1px solid rgba(139,105,20,.2);border-radius:1px;}
+.autosave-badge svg{width:12px;height:12px;}
+
+/* ── NOTES SECTION ── */
+.notes-section{margin-top:1rem;background:rgba(139,105,20,.04);border:1px solid var(–border-light);padding:1rem 1.1rem;}
+.notes-section-title{font-size:.67rem;letter-spacing:.18em;text-transform:uppercase;color:var(–ink-dim);margin-bottom:.5rem;}
+.notes-section textarea{background:transparent;border-color:var(–border-light);font-size:.88rem;}
+.notes-save-row{display:flex;align-items:center;justify-content:space-between;margin-top:.6rem;flex-wrap:wrap;gap:.5rem;}
+
+/* ── INTERPRETATION ── */
+.interp-block{background:var(–surface);border:1px solid var(–border);box-shadow:0 2px 12px var(–sh);margin-top:1.3rem;overflow:hidden;}
+.interp-head{padding:.85rem 1.2rem;border-bottom:1px solid var(–border-light);display:flex;align-items:center;gap:.7rem;}
+.interp-head h3{font-family:‘Playfair Display’,serif;font-size:.93rem;font-weight:400;font-style:italic;color:var(–ink-mid);}
+.interp-loading{padding:1.7rem;text-align:center;color:var(–ink-dim);font-style:italic;font-size:.86rem;}
+.spin{display:inline-block;width:15px;height:15px;border:1.5px solid var(–border);border-top-color:var(–gold);border-radius:50%;animation:spin .9s linear infinite;vertical-align:middle;margin-left:.5rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.interp-body{padding:1.2rem;display:none;}
+.interp-body.show{display:block;}
+.i-sec{margin-bottom:1.1rem;padding-bottom:1rem;border-bottom:1px solid var(–border-light);}
+.i-sec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.i-sec-title{font-size:.64rem;letter-spacing:.22em;text-transform:uppercase;color:var(–gold);margin-bottom:.45rem;}
+.i-sec-body{font-size:.89rem;color:var(–ink-mid);line-height:1.78;}
+
+/* ── MANUAL ── */
+.mode-tabs{display:flex;background:var(–surface2);border:1px solid var(–border);margin-bottom:1.3rem;overflow:hidden;}
+.mode-tab{flex:1;padding:.55rem .5rem;background:none;border:none;font-family:‘Lora’,serif;font-size:.8rem;color:var(–ink-dim);cursor:pointer;transition:all .15s;letter-spacing:.04em;}
+.mode-tab.active{background:var(–surface);color:var(–gold);box-shadow:inset 0 0 0 1px var(–border);}
+.mode-panel{display:none;}.mode-panel.active{display:block;}
+
+.line-builder{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem;}
+.lb-row{display:flex;align-items:center;gap:.7rem;background:var(–surface);border:1px solid var(–border-light);padding:.5rem .85rem;}
+.lb-num{font-size:.67rem;color:var(–ink-dim);width:56px;font-style:italic;}
+.lb-btns{display:flex;gap:.3rem;flex:1;flex-wrap:wrap;}
+.lb-btn{flex:1;min-width:68px;padding:.32rem .3rem;border:1px solid var(–border);background:none;color:var(–ink-mid);font-family:‘Lora’,serif;font-size:.72rem;cursor:pointer;transition:all .13s;border-radius:1px;}
+.lb-btn:hover{border-color:var(–gold);color:var(–gold);}
+.s-yang{background:rgba(139,105,20,.1);border-color:var(–gold)!important;color:var(–gold)!important;}
+.s-yin{background:rgba(90,80,64,.1);border-color:var(–ink-mid)!important;color:var(–ink-mid)!important;}
+.s-myang{background:rgba(139,32,32,.1);border-color:var(–red)!important;color:var(–red)!important;}
+.s-myin{background:rgba(139,32,32,.08);border-color:var(–red)!important;color:var(–red)!important;}
+
+/* hex number input */
+.hex-number-block{background:var(–surface);border:1px solid var(–border-light);padding:1.1rem;}
+.hex-number-row{display:flex;gap:.8rem;align-items:flex-end;flex-wrap:wrap;}
+.hex-number-row > div{flex:1;min-width:100px;}
+.hex-number-row input[type=number]{text-align:center;font-size:1.2rem;font-family:‘Playfair Display’,serif;}
+.moving-lines-input{margin-top:.9rem;}
+.moving-lines-grid{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.4rem;}
+.moving-cb{display:flex;align-items:center;gap:.3rem;font-size:.78rem;color:var(–ink-mid);cursor:pointer;}
+.moving-cb input{width:auto;padding:0;border:none;}
+
+/* ── JOURNAL ── */
+.j-toolbar{display:flex;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap;}
+.j-toolbar input{flex:1;min-width:150px;font-size:.83rem;padding:.5rem .82rem;}
+.j-toolbar select{width:auto;min-width:135px;font-size:.83rem;padding:.5rem .82rem;}
+.j-list{display:flex;flex-direction:column;gap:.72rem;}
+.j-entry{background:var(–surface);border:1px solid var(–border-light);box-shadow:0 1px 6px var(–sh);position:relative;transition:box-shadow .15s,border-color .15s;}
+.j-entry:hover{border-color:var(–border);box-shadow:0 3px 14px var(–sh-md);}
+.j-top{display:flex;align-items:flex-start;gap:.85rem;padding:.9rem 1rem;cursor:pointer;}
+.j-glyph{font-family:‘Noto Serif SC’,serif;font-size:1.9rem;color:var(–gold);line-height:1;flex-shrink:0;}
+.j-meta{flex:1;min-width:0;}
+.j-hex-name{font-family:‘Playfair Display’,serif;font-size:.9rem;font-style:italic;}
+.j-hex-sub{font-size:.67rem;color:var(–ink-dim);letter-spacing:.07em;margin-top:.1rem;}
+.j-q{font-size:.84rem;color:var(–ink-mid);margin-top:.3rem;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.j-q::before{content:’« ‘;color:var(–border);}
+.j-q::after{content:’ »’;color:var(–border);}
+.j-date{font-size:.66rem;color:var(–ink-dim);flex-shrink:0;text-align:right;line-height:1.5;}
+.j-mini{display:flex;gap:3px;padding:0 1rem .75rem;}
+.j-body{display:none;padding:.7rem 1rem 1rem;border-top:1px solid var(–border-light);}
+.j-entry.open .j-body{display:block;}
+.j-notes{font-size:.85rem;color:var(–ink-mid);line-height:1.7;white-space:pre-wrap;}
+.del-btn{position:absolute;top:.55rem;right:.55rem;background:none;border:none;color:var(–ink-dim);cursor:pointer;font-size:.7rem;padding:.2rem .4rem;opacity:0;transition:all .13s;}
+.j-entry:hover .del-btn{opacity:.42;}
+.del-btn:hover{opacity:1!important;color:var(–red);}
+
+/* inline note editor in journal */
+.j-note-edit{margin-top:.7rem;display:none;}
+.j-note-edit.open{display:block;}
+.j-note-edit textarea{font-size:.84rem;min-height:70px;}
+.j-note-actions{display:flex;gap:.5rem;margin-top:.4rem;}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:.85rem;margin-bottom:1.7rem;}
+.stat-card{background:var(–surface);border:1px solid var(–border);padding:1.05rem;text-align:center;box-shadow:0 1px 6px var(–sh);}
+.stat-val{font-family:‘Playfair Display’,serif;font-size:2.1rem;color:var(–gold);display:block;line-height:1;}
+.stat-lbl{font-size:.66rem;color:var(–ink-dim);letter-spacing:.13em;text-transform:uppercase;margin-top:.3rem;}
+.chart-sec{margin-bottom:1.7rem;}
+.chart-sec h3{font-family:‘Playfair Display’,serif;font-size:.83rem;font-weight:400;color:var(–ink-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem;}
+.bar-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.42rem;}
+.bar-lbl{font-family:‘Noto Serif SC’,serif;font-size:1.05rem;color:var(–gold);width:26px;text-align:center;}
+.bar-name{width:150px;font-size:.77rem;color:var(–ink-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:3px;background:var(–border-light);position:relative;}
+.bar-fill{position:absolute;left:0;top:0;height:100%;background:var(–gold);transition:width .7s ease;}
+.bar-fill-r{background:var(–red);}
+.bar-cnt{font-size:.7rem;color:var(–ink-dim);width:20px;text-align:right;}
+
+.empty-state{text-align:center;padding:4rem 2rem;color:var(–ink-dim);}
+.empty-cn{font-family:‘Noto Serif SC’,serif;font-size:3.4rem;color:var(–border);display:block;margin-bottom:1rem;}
+.empty-state p{font-style:italic;}
+.divider{border:none;border-top:1px solid var(–border-light);margin:1.3rem 0;}
+.mb{margin-bottom:1rem;}.row{display:flex;gap:.8rem;}.row>*{flex:1;}
+
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(12px);background:var(–ink);color:#f5f0e8;padding:.55rem 1.3rem;font-size:.78rem;letter-spacing:.07em;opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap;border-radius:1px;box-shadow:0 4px 16px var(–sh-md);z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:640px){header{padding:.85rem 1rem;flex-direction:column;gap:.65rem;}.nav-tab{font-size:.73rem;padding:.38rem .6rem;}.hex-glyph{font-size:2.8rem;}.hex-display{gap:1rem;}}
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <div class="logo-char">易</div>
+    <div class="logo-text"><h1>И Цзин</h1><p>Журнал бросков</p></div>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('cast',this)">Бросок</button>
+    <button class="nav-tab" onclick="switchTab('manual',this)">Вручную</button>
+    <button class="nav-tab" onclick="switchTab('journal',this)">Журнал</button>
+    <button class="nav-tab" onclick="switchTab('stats',this)">Аналитика</button>
+  </nav>
+</header>
+
+<!-- ══ CAST ══ -->
+
+<div id="tab-cast" class="panel active">
+<div class="container">
+  <div class="mb">
+    <label class="fl">Вопрос к оракулу</label>
+    <textarea id="castQuestion" rows="3" placeholder="Запиши свой вопрос или намерение перед броском..."></textarea>
+  </div>
+
+<button class="btn-cast" id="castBtn" onclick="castAll()">Бросить монеты</button>
+
+  <!-- Coin animation — 6 rows of 3 coins -->
+
+  <div id="coinArea" style="display:none;margin-top:1rem;">
+
+```
+<div id="coinRows"></div>
+```
+
+  </div>
+
+  <div id="castResult" style="display:none">
+    <div class="hex-display" id="castHexD"></div>
+
+```
+<div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap;">
+  <span class="autosave-badge">
+    <svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5 5.5-5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Бросок сохранён автоматически
+  </span>
+  <button class="btn btn-outline" style="padding:.3rem .9rem;font-size:.78rem;" onclick="resetCast()">Новый бросок</button>
+</div>
+
+<div class="notes-section">
+  <div class="notes-section-title">Заметки и интерпретация</div>
+  <textarea id="castNotes" rows="4" placeholder="Запиши свои мысли, ощущения, связь с ситуацией..."></textarea>
+  <div class="notes-save-row">
+    <span style="font-size:.72rem;color:var(--ink-dim);font-style:italic;">Заметки обновят запись в журнале</span>
+    <button class="btn btn-primary" style="padding:.5rem 1.1rem;font-size:.8rem;" onclick="saveCastNotes()">Сохранить заметки</button>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+</div>
+
+<!-- ══ MANUAL ══ -->
+
+<div id="tab-manual" class="panel">
+<div class="container">
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="modeTabLines" onclick="switchMode('lines',this)">По линиям монет</button>
+    <button class="mode-tab" id="modeTabNum" onclick="switchMode('num',this)">По номеру гексаграммы</button>
+  </div>
+
+  <!-- MODE: LINES -->
+
+  <div class="mode-panel active" id="mode-lines">
+    <p style="color:var(--ink-dim);font-style:italic;font-size:.86rem;margin-bottom:1.1rem;">
+      Орёл = 3, решка = 2. Суммы: 6 — инь →, 7 — ян, 8 — инь, 9 — ян →
+    </p>
+    <div class="mb"><label class="fl">Вопрос</label><textarea id="manLinesQ" rows="2" placeholder="Запиши свой вопрос..."></textarea></div>
+    <div class="sec-title">Линии (снизу вверх)</div>
+    <div class="line-builder" id="lineBuilder"></div>
+    <button class="btn btn-outline mb" style="width:100%" onclick="calcManualLines()">Определить гексаграмму</button>
+    <div id="manLinesResult" style="display:none">
+      <div class="hex-display" id="manLinesHexD"></div>
+      <hr class="divider">
+    </div>
+    <div class="mb"><label class="fl">Дата и время</label><input type="datetime-local" id="manLinesDate"></div>
+    <div class="mb"><label class="fl">Заметки</label><textarea id="manLinesNotes" rows="3" placeholder="Заметки..."></textarea></div>
+    <button class="btn btn-primary" id="manLinesSave" onclick="saveManualLines()" disabled>Сохранить в журнал</button>
+  </div>
+
+  <!-- MODE: NUMBER -->
+
+  <div class="mode-panel" id="mode-num">
+    <p style="color:var(--ink-dim);font-style:italic;font-size:.86rem;margin-bottom:1.1rem;">
+      Введи номер основной гексаграммы (1–64) и отметь подвижные линии. Переходная определится автоматически.
+    </p>
+    <div class="mb"><label class="fl">Вопрос</label><textarea id="manNumQ" rows="2" placeholder="Запиши свой вопрос..."></textarea></div>
+
+```
+<div class="hex-number-block mb">
+  <div class="hex-number-row">
+    <div>
+      <label class="fl">Основная гексаграмма (№ 1–64)</label>
+      <input type="number" id="manNumPri" min="1" max="64" placeholder="1–64" oninput="onNumInput()">
+    </div>
+    <div id="manNumPriPreview" style="padding-bottom:.1rem;display:flex;align-items:center;gap:.6rem;opacity:0;transition:opacity .2s;">
+      <span id="manNumPriGlyph" style="font-family:'Noto Serif SC',serif;font-size:2.2rem;color:var(--gold);"></span>
+      <div><div id="manNumPriName" style="font-family:'Playfair Display',serif;font-style:italic;font-size:.95rem;"></div>
+      <div id="manNumPriCn" style="font-family:'Noto Serif SC',serif;font-size:.85rem;color:var(--ink-dim);"></div></div>
+    </div>
+  </div>
+
+  <div class="moving-lines-input">
+    <label class="fl">Подвижные линии (необязательно)</label>
+    <div class="moving-lines-grid">
+      <label class="moving-cb"><input type="checkbox" class="mv-cb" value="1"> Линия 1</label>
+      <label class="moving-cb"><input type="checkbox" class="mv-cb" value="2"> Линия 2</label>
+      <label class="moving-cb"><input type="checkbox" class="mv-cb" value="3"> Линия 3</label>
+      <label class="moving-cb"><input type="checkbox" class="mv-cb" value="4"> Линия 4</label>
+      <label class="moving-cb"><input type="checkbox" class="mv-cb" value="5"> Линия 5</label>
+      <label class="moving-cb"><input type="checkbox" class="mv-cb" value="6"> Линия 6</label>
+    </div>
+  </div>
+
+  <div style="margin-top:.9rem;" id="manNumSecRow">
+    <label class="fl">Переходная гексаграмма (вычисляется автоматически или введи вручную)</label>
+    <div style="display:flex;gap:.7rem;align-items:center;">
+      <input type="number" id="manNumSec" min="1" max="64" placeholder="необязательно" style="max-width:180px;" oninput="onSecInput()">
+      <span id="manNumSecPreview" style="font-family:'Noto Serif SC',serif;font-size:1.5rem;color:var(--gold-l);opacity:0;transition:opacity .2s;"></span>
+    </div>
+  </div>
+</div>
+
+<button class="btn btn-outline mb" style="width:100%" onclick="calcManualNum()">Определить гексаграмму</button>
+
+<div id="manNumResult" style="display:none">
+  <div class="hex-display" id="manNumHexD"></div>
+  <hr class="divider">
+</div>
+
+<div class="mb"><label class="fl">Дата и время</label><input type="datetime-local" id="manNumDate"></div>
+<div class="mb"><label class="fl">Заметки</label><textarea id="manNumNotes" rows="3" placeholder="Заметки..."></textarea></div>
+<button class="btn btn-primary" id="manNumSave" onclick="saveManualNum()" disabled>Сохранить в журнал</button>
+```
+
+  </div>
+</div>
+</div>
+
+<!-- ══ JOURNAL ══ -->
+
+<div id="tab-journal" class="panel">
+<div class="container-wide">
+  <div class="j-toolbar">
+    <input type="text" id="jSearch" placeholder="Поиск..." oninput="renderJournal()">
+    <select id="jHexFilter" onchange="renderJournal()"><option value="">Все гексаграммы</option></select>
+    <select id="jSort" onchange="renderJournal()">
+      <option value="newest">Сначала новые</option>
+      <option value="oldest">Сначала старые</option>
+    </select>
+  </div>
+  <div class="j-list" id="jList"></div>
+</div>
+</div>
+
+<!-- ══ STATS ══ -->
+
+<div id="tab-stats" class="panel">
+<div class="container"><div id="statsContent"></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// HEXAGRAM DATA
+// ══════════════════════════════════════════════
+const HEX_LINES=[null,
+[1,1,1,1,1,1],[0,0,0,0,0,0],[1,0,0,0,1,0],[0,1,0,0,0,1],[1,1,1,0,1,0],[0,1,0,1,1,1],
+[0,1,0,0,0,0],[0,0,0,0,1,0],[1,1,1,0,1,1],[1,1,0,1,1,1],[1,1,1,0,0,0],[0,0,0,1,1,1],
+[1,0,1,1,1,1],[1,1,1,1,0,1],[0,0,1,0,0,0],[0,0,0,1,0,0],[1,0,0,1,1,0],[0,1,1,0,0,1],
+[1,1,0,0,0,0],[0,0,0,0,1,1],[1,0,0,1,0,1],[1,0,1,0,0,1],[0,0,0,0,0,1],[1,0,0,0,0,0],
+[1,0,0,1,1,1],[1,1,1,0,0,1],[1,0,0,0,0,1],[0,1,1,1,1,0],[0,1,0,0,1,0],[1,0,1,1,0,1],
+[0,0,1,1,1,0],[0,1,1,1,0,0],[0,0,1,1,1,1],[1,1,1,1,0,0],[0,0,0,1,0,1],[1,0,1,0,0,0],
+[1,0,1,0,1,1],[1,1,0,1,0,1],[0,0,1,0,1,0],[0,1,0,1,0,0],[1,1,0,0,0,1],[1,0,0,0,1,1],
+[1,1,1,1,1,0],[0,1,1,1,1,1],[0,0,0,1,1,0],[0,1,1,0,0,0],[0,1,0,1,1,0],[0,1,1,0,1,0],
+[1,0,1,1,1,0],[0,1,1,1,0,1],[1,0,0,1,0,0],[0,0,1,0,0,1],[0,0,1,0,1,1],[1,1,0,1,0,0],
+[1,0,1,1,0,0],[0,0,1,1,0,1],[0,1,1,0,1,1],[1,1,0,1,1,0],[0,1,0,0,1,1],[1,1,0,0,1,0],
+[1,1,0,0,1,1],[0,0,1,1,0,0],[1,0,1,0,1,0],[0,1,0,1,0,1]
+];
+const HEX=[null,
+{cn:'乾',ru:'Творчество',tlo:'Небо',tup:'Небо',img:'Небо вращается мощно. Благородный муж непрестанно совершенствует себя.'},
+{cn:'坤',ru:'Исполнение',tlo:'Земля',tup:'Земля',img:'Земля несёт всё сущее. Благородный муж с глубокой добродетелью несёт всё.'},
+{cn:'屯',ru:'Начальная трудность',tlo:'Гром',tup:'Вода',img:'Облака и гром. Благородный муж упорядочивает и устанавливает.'},
+{cn:'蒙',ru:'Незрелость',tlo:'Гора',tup:'Вода',img:'Источник бьёт у подножия горы. Благородный муж воспитывает добродетель.'},
+{cn:'需',ru:'Ожидание',tlo:'Небо',tup:'Вода',img:'Облака поднимаются к небу. Благородный муж ест и пьёт, веселится и радуется.'},
+{cn:'讼',ru:'Конфликт',tlo:'Вода',tup:'Небо',img:'Небо и вода движутся в разные стороны. Благородный муж тщательно обдумывает начало дел.'},
+{cn:'师',ru:'Войско',tlo:'Земля',tup:'Вода',img:'Вода посреди земли. Благородный муж принимает народ и заботится о нём.'},
+{cn:'比',ru:'Единение',tlo:'Вода',tup:'Земля',img:'Вода над землёй. Прежние цари создавали уделы и сближались с правителями.'},
+{cn:'小畜',ru:'Малое воспитание',tlo:'Небо',tup:'Ветер',img:'Ветер движется по небу. Благородный муж совершенствует свою культуру.'},
+{cn:'履',ru:'Наступание',tlo:'Ветер',tup:'Небо',img:'Небо наверху, озеро внизу. Благородный муж различает высшее и низшее.'},
+{cn:'泰',ru:'Расцвет',tlo:'Небо',tup:'Земля',img:'Небо и земля соединяются. Правитель завершает путь Неба и Земли.'},
+{cn:'否',ru:'Упадок',tlo:'Земля',tup:'Небо',img:'Небо и земля не общаются. Благородный муж скрывает добродетель в трудные времена.'},
+{cn:'同人',ru:'Единомышленники',tlo:'Небо',tup:'Огонь',img:'Огонь под небом. Благородный муж различает людей по родам и вещи по видам.'},
+{cn:'大有',ru:'Великое владение',tlo:'Огонь',tup:'Небо',img:'Огонь на небе. Благородный муж пресекает зло и поощряет добро.'},
+{cn:'谦',ru:'Смирение',tlo:'Земля',tup:'Гора',img:'Земля покрывает гору. Благородный муж умаляет многое и прибавляет малому.'},
+{cn:'豫',ru:'Воодушевление',tlo:'Гром',tup:'Земля',img:'Гром исходит из земли. Прежние цари создавали музыку для почитания предков.'},
+{cn:'随',ru:'Следование',tlo:'Озеро',tup:'Гром',img:'Гром в недрах озера. Благородный муж на закате уходит внутрь и отдыхает.'},
+{cn:'蛊',ru:'Исправление',tlo:'Ветер',tup:'Гора',img:'Ветер у подножия горы. Благородный муж воодушевляет народ и воспитывает добродетель.'},
+{cn:'临',ru:'Приближение',tlo:'Земля',tup:'Озеро',img:'Земля над озером. Благородный муж не знает усталости в поучении народа.'},
+{cn:'观',ru:'Созерцание',tlo:'Ветер',tup:'Земля',img:'Ветер проходит по земле. Прежние цари посещали области и поучали народ.'},
+{cn:'噬嗑',ru:'Стягивание',tlo:'Огонь',tup:'Гром',img:'Гром и молния. Прежние цари ужесточали законы и устанавливали наказания.'},
+{cn:'贲',ru:'Убранство',tlo:'Гора',tup:'Огонь',img:'Огонь у подножия горы. Благородный муж проясняет законы, не дерзая рубить.'},
+{cn:'剥',ru:'Разрушение',tlo:'Гора',tup:'Земля',img:'Гора покоится на земле. Люди наверху обеспечивают покой жителям.'},
+{cn:'复',ru:'Возврат',tlo:'Земля',tup:'Гром',img:'Гром в недрах земли. Прежние цари в день зимнего солнцестояния закрывали врата.'},
+{cn:'无妄',ru:'Беспорочность',tlo:'Небо',tup:'Гром',img:'Гром под небом. Прежние цари в согласии со временем воспитывали всё сущее.'},
+{cn:'大畜',ru:'Великое воспитание',tlo:'Гора',tup:'Небо',img:'Небо в горе. Благородный муж познаёт многие слова и дела прошлого.'},
+{cn:'颐',ru:'Питание',tlo:'Гора',tup:'Гром',img:'Гром у подножия горы. Благородный муж осторожен в речах и умерен в еде.'},
+{cn:'大过',ru:'Великий переход',tlo:'Озеро',tup:'Ветер',img:'Деревья поглощены водой. Благородный муж, стоя в одиночестве, не страшится.'},
+{cn:'坎',ru:'Бездна',tlo:'Вода',tup:'Вода',img:'Вода течёт беспрестанно. Благородный муж действует добродетельно и учит.'},
+{cn:'离',ru:'Огонь',tlo:'Огонь',tup:'Огонь',img:'Два огня возгораются. Великий человек озаряет четыре стороны света.'},
+{cn:'咸',ru:'Взаимодействие',tlo:'Озеро',tup:'Гора',img:'Озеро на горе. Благородный муж принимает людей и не устаёт.'},
+{cn:'恒',ru:'Постоянство',tlo:'Гром',tup:'Ветер',img:'Гром и ветер. Благородный муж стоит и не меняет своего направления.'},
+{cn:'遯',ru:'Отступление',tlo:'Небо',tup:'Гора',img:'Под небом — гора. Благородный муж держится вдали от ничтожных людей.'},
+{cn:'大壮',ru:'Великая мощь',tlo:'Гром',tup:'Небо',img:'Гром под небом. Благородный муж не поступает против ли.'},
+{cn:'晋',ru:'Продвижение',tlo:'Огонь',tup:'Земля',img:'Солнце восходит над землёй. Благородный муж ярко проявляет светлую добродетель.'},
+{cn:'明夷',ru:'Потемнение света',tlo:'Земля',tup:'Огонь',img:'Свет погружается в землю. Благородный муж скрывает свой свет, но остаётся ясным.'},
+{cn:'家人',ru:'Семья',tlo:'Ветер',tup:'Огонь',img:'Ветер исходит из огня. Благородный муж добросовестен в речах и постоянен в действиях.'},
+{cn:'睽',ru:'Разлад',tlo:'Огонь',tup:'Озеро',img:'Огонь и вода движутся в разные стороны. Благородный муж в согласии ищет различий.'},
+{cn:'蹇',ru:'Препятствие',tlo:'Вода',tup:'Гора',img:'Вода на горе. Благородный муж обращается к себе и воспитывает добродетель.'},
+{cn:'解',ru:'Освобождение',tlo:'Гром',tup:'Вода',img:'Гром и дождь. Благородный муж прощает ошибки и помилует преступников.'},
+{cn:'损',ru:'Убыль',tlo:'Гора',tup:'Озеро',img:'Озеро у подножия горы. Благородный муж обуздывает гнев и сдерживает желания.'},
+{cn:'益',ru:'Приумножение',tlo:'Ветер',tup:'Гром',img:'Ветер и гром. Благородный муж, увидев добро, устремляется к нему.'},
+{cn:'夬',ru:'Решимость',tlo:'Озеро',tup:'Небо',img:'Озеро поднимается к небу. Благородный муж раздаёт щедроты и не хвалится.'},
+{cn:'姤',ru:'Встреча',tlo:'Небо',tup:'Ветер',img:'Ветер дует под небом. Правитель возвещает свои указы четырём сторонам.'},
+{cn:'萃',ru:'Собирание',tlo:'Озеро',tup:'Земля',img:'Озеро над землёй. Благородный муж чинит оружие, готовясь к непредвиденному.'},
+{cn:'升',ru:'Подъём',tlo:'Земля',tup:'Ветер',img:'Дерево растёт из земли. Благородный муж послушен добродетели и накапливает малое.'},
+{cn:'困',ru:'Истощение',tlo:'Озеро',tup:'Вода',img:'Вода покидает озеро. Благородный муж рискует жизнью, стремясь к своей цели.'},
+{cn:'井',ru:'Колодец',tlo:'Вода',tup:'Ветер',img:'Дерево в воде. Благородный муж поощряет народ и внушает взаимопомощь.'},
+{cn:'革',ru:'Смена',tlo:'Озеро',tup:'Огонь',img:'Огонь в озере. Благородный муж упорядочивает летоисчисление.'},
+{cn:'鼎',ru:'Треножник',tlo:'Огонь',tup:'Ветер',img:'Огонь над деревом. Благородный муж выправляет судьбу и удерживает небесное предназначение.'},
+{cn:'震',ru:'Гром',tlo:'Гром',tup:'Гром',img:'Непрерывный гром. Благородный муж в страхе и трепете исправляет себя.'},
+{cn:'艮',ru:'Гора',tlo:'Гора',tup:'Гора',img:'Два пика гор. Благородный муж в мыслях не выходит за своё положение.'},
+{cn:'渐',ru:'Постепенность',tlo:'Ветер',tup:'Гора',img:'Дерево растёт на горе. Благородный муж обитает в достоинстве и исправляет нравы.'},
+{cn:'归妹',ru:'Невеста',tlo:'Гром',tup:'Озеро',img:'Гром над озером. Благородный муж постигает непреходящее в конце вещей.'},
+{cn:'丰',ru:'Изобилие',tlo:'Гром',tup:'Огонь',img:'Гром и молния. Благородный муж решает тяжбы и исполняет наказания.'},
+{cn:'旅',ru:'Странник',tlo:'Огонь',tup:'Гора',img:'Огонь на горе. Благородный муж проницателен в наказаниях и не затягивает споров.'},
+{cn:'巽',ru:'Мягкость',tlo:'Ветер',tup:'Ветер',img:'Ветра следуют друг за другом. Благородный муж повторяет веления и исполняет дела.'},
+{cn:'兑',ru:'Радость',tlo:'Озеро',tup:'Озеро',img:'Два озера. Благородный муж общается с друзьями, совместно изучая.'},
+{cn:'涣',ru:'Рассеивание',tlo:'Ветер',tup:'Вода',img:'Ветер над водой. Прежние цари приносили жертвы Высшему и строили храмы.'},
+{cn:'节',ru:'Ограничение',tlo:'Вода',tup:'Озеро',img:'Вода над озером. Благородный муж устанавливает число и меру.'},
+{cn:'中孚',ru:'Внутренняя правда',tlo:'Ветер',tup:'Озеро',img:'Ветер над озером. Благородный муж рассуждает о делах суда и смягчает наказания.'},
+{cn:'小过',ru:'Малый переход',tlo:'Гром',tup:'Гора',img:'Гром над горой. Благородный муж в действиях немного преступает, в трауре скорбит.'},
+{cn:'既济',ru:'После завершения',tlo:'Вода',tup:'Огонь',img:'Вода над огнём. Благородный муж обдумывает беды и заблаговременно предотвращает их.'},
+{cn:'未济',ru:'До завершения',tlo:'Огонь',tup:'Вода',img:'Огонь над водой. Благородный муж осторожен в различении вещей и определении мест.'}
+];
+
+function findHex(lines){const k=lines.map(l=>l.yang?1:0).join('');for(let i=1;i<=64;i++)if(HEX_LINES[i].join('')===k)return i;return 1;}
+function glyph(n){return String.fromCodePoint(0x4DC0+n-1);}
+
+// ══════════════════════════════════════
+// COIN SVG HELPERS
+// И Цзин монеты: лицо (字) = ян = 3 очка, оборот = инь = 2 очка
+// ══════════════════════════════════════
+function makeCoinSVG(isYang, coinIdx){
+  // Уникальный id для градиента чтобы не конфликтовали
+  const uid = 'cg_' + coinIdx + '_' + (isYang?'y':'i');
+  if(isYang){
+    // Лицевая сторона — золото, иероглиф 字 (знак монеты), 3 точки-насечки = ян
+    return `<svg class="coin-svg" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="${uid}" cx="38%" cy="32%"><stop offset="0%" stop-color="#f0d878"/><stop offset="55%" stop-color="#c8a030"/><stop offset="100%" stop-color="#8b5e0a"/></radialGradient></defs>
+      <circle cx="27" cy="27" r="26" fill="url(#${uid})" stroke="#7a5010" stroke-width="1.4"/>
+      <circle cx="27" cy="27" r="20.5" fill="none" stroke="rgba(255,240,160,.45)" stroke-width=".9"/>
+      <rect x="20" y="19" width="14" height="16" rx="1" fill="none" stroke="#5a3a00" stroke-width=".9" opacity=".5"/>
+      <text x="27" y="33" text-anchor="middle" font-family="Noto Serif SC,serif" font-size="14" fill="#4a2e00" opacity=".9">字</text>
+      <!-- 3 dots top = ян (значение 3) -->
+      <circle cx="13" cy="11" r="2" fill="#c89020" opacity=".7"/>
+      <circle cx="27" cy="8"  r="2" fill="#c89020" opacity=".7"/>
+      <circle cx="41" cy="11" r="2" fill="#c89020" opacity=".7"/>
+    </svg>`;
+  } else {
+    // Оборотная сторона — медь/бронза, без надписи, 2 точки = инь
+    return `<svg class="coin-svg" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="${uid}" cx="38%" cy="32%"><stop offset="0%" stop-color="#cfc090"/><stop offset="55%" stop-color="#a08860"/><stop offset="100%" stop-color="#6a5830"/></radialGradient></defs>
+      <circle cx="27" cy="27" r="26" fill="url(#${uid})" stroke="#604820" stroke-width="1.4"/>
+      <circle cx="27" cy="27" r="20.5" fill="none" stroke="rgba(255,240,180,.25)" stroke-width=".9"/>
+      <circle cx="27" cy="27" r="7"    fill="none" stroke="rgba(200,180,120,.4)" stroke-width=".9"/>
+      <!-- 2 dots = инь (значение 2) -->
+      <circle cx="18" cy="11" r="2" fill="#806040" opacity=".6"/>
+      <circle cx="36" cy="11" r="2" fill="#806040" opacity=".6"/>
+    </svg>`;
+  }
+}
+
+// ══════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════
+const SKEY='iching_v3';
+function load(){try{return JSON.parse(localStorage.getItem(SKEY))||[];}catch(e){return[];}}
+function save(a){localStorage.setItem(SKEY,JSON.stringify(a));}
+
+// ══════════════════════════════════════
+// TABS
+// ══════════════════════════════════════
+function switchTab(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='journal')renderJournal();
+  if(name==='stats')renderStats();
+  if(name==='manual')initManual();
+}
+
+// ══════════════════════════════════════
+// CAST — AUTO SAVE
+// ══════════════════════════════════════
+let castEntryId=null; // ID of auto-saved entry for current cast
+
+function rnd3(){return Math.random()<.5?3:2;}
+function throwLine(){const c=[rnd3(),rnd3(),rnd3()],s=c[0]+c[1]+c[2];return{value:s,yang:s===7||s===9,moving:s===6||s===9,coins:c};}
+
+async function castAll(){
+  // Reset
+  castEntryId=null;
+  document.getElementById('castResult').style.display='none';
+  document.getElementById('castNotes').value='';
+  const btn=document.getElementById('castBtn');
+  btn.disabled=true;btn.textContent='Бросаю...';
+
+  // Show coin area
+  const coinArea=document.getElementById('coinArea');
+  const coinRows=document.getElementById('coinRows');
+  coinArea.style.display='block';
+  coinRows.innerHTML='';
+
+  const lines=[];
+
+  for(let li=0;li<6;li++){
+    const line=throwLine();
+
+    // Coin rows: insert at top of list so new throw appears above previous — builds upward visually
+    const rowDiv=document.createElement('div');
+    rowDiv.style.cssText='display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;';
+    rowDiv.innerHTML=`<div style="font-size:.67rem;color:var(--ink-dim);width:52px;font-style:italic;text-align:right;flex-shrink:0">Бросок ${li+1}</div><div class="coin-strip" style="padding:.35rem 0;gap:.9rem;min-height:unset;" id="cstrip-${li}"></div><div id="lineresult-${li}" style="font-size:.78rem;color:var(--ink-dim);font-style:italic;margin-left:.5rem;min-width:80px;opacity:0;transition:opacity .3s;"></div>`;
+    coinRows.insertBefore(rowDiv, coinRows.firstChild);
+
+    const strip=document.getElementById('cstrip-'+li);
+
+    // Show 3 coins with stagger — 字 side = ян = 3 points
+    for(let ci=0;ci<3;ci++){
+      await wait(90+ci*60);
+      const isYang=line.coins[ci]===3;
+      const wrap=document.createElement('div');
+      wrap.className='coin-wrap';
+      wrap.innerHTML=makeCoinSVG(isYang, li*3+ci);
+      strip.appendChild(wrap);
+      requestAnimationFrame(()=>wrap.classList.add('show'));
+    }
+
+    await wait(320);
+    lines.push(line);
+    // Show result label
+    const resultLabel = document.getElementById('lineresult-'+li);
+    if(resultLabel){
+      const lbl={6:'инь → (6)',7:'ян (7)',8:'инь (8)',9:'ян → (9)'};
+      const col=line.moving?'var(--red)':(line.yang?'var(--ink)':'var(--ink-mid)');
+      resultLabel.innerHTML=`<span style="color:${col}">= ${lbl[line.value]}</span>`;
+      requestAnimationFrame(()=>resultLabel.style.opacity='1');
+    }
+  }
+
+  // Compute hexagrams
+  const pri=findHex(lines);
+  let sec=null;
+  if(lines.some(l=>l.moving)) sec=findHex(lines.map(l=>({...l,yang:l.moving?!l.yang:l.yang})));
+
+  // AUTO-SAVE
+  const question=document.getElementById('castQuestion').value.trim();
+  const entry={
+    id:Date.now()+'',
+    date:new Date().toISOString(),
+    question,
+    notes:'',
+    primary:pri,
+    secondary:sec,
+    lines:lines.map(l=>({value:l.value,yang:l.yang,moving:l.moving})),
+    source:'auto'
+  };
+  const entries=load();
+  entries.unshift(entry);
+  save(entries);
+  castEntryId=entry.id;
+
+  renderHexDisp('castHexD',pri,sec);
+  document.getElementById('castResult').style.display='block';
+  btn.disabled=false;btn.textContent='Бросить монеты';
+
+  // No AI interpretation in mobile version
+}
+
+function addLineVis(cid,idx,line){
+  const el=document.createElement('div');
+  el.className='line-vis-row';
+  const y=line.yang,m=line.moving;
+  let s=y
+    ?`<div class="bar-yang${m?' bar-m':''}"></div>${m?'<span style="color:var(--red);font-size:.75rem;margin-left:4px">○</span>':''}`
+    :`<div class="bar-yin${m?' bar-m':''}"></div><div class="bar-gap"></div><div class="bar-yin${m?' bar-m':''}"></div>${m?'<span style="color:var(--red);font-size:.75rem;margin-left:4px">×</span>':''}`;
+  const lbl={6:'инь →',7:'ян',8:'инь',9:'ян →'};
+  el.innerHTML=`<div class="line-vis-num">${idx+1}</div><div class="line-vis-sym">${s}</div><div class="line-vis-tag${m?' mv':''}">${lbl[line.value]} (${line.value})</div>`;
+  // Insert at TOP (prepend) so that line 1 (first thrown) ends up at bottom, line 6 at top
+  // Each new line goes above the previous one = building the hexagram upward
+  const container=document.getElementById(cid);
+  container.insertBefore(el, container.firstChild);
+  requestAnimationFrame(()=>el.classList.add('show'));
+}
+
+function renderHexDisp(cid,pri,sec){
+  const h1=HEX[pri];
+  let html=`<div class="hex-card"><span class="hex-glyph">${glyph(pri)}</span><div class="hex-num">№ ${pri}</div><div class="hex-cn">${h1.cn}</div><div class="hex-ru">${h1.ru}</div></div>`;
+  if(sec&&sec!==pri){const h2=HEX[sec];html+=`<div class="hex-arrow">→</div><div class="hex-card"><span class="hex-glyph">${glyph(sec)}</span><div class="hex-num">№ ${sec}</div><div class="hex-cn">${h2.cn}</div><div class="hex-ru">${h2.ru}</div></div>`;}
+  document.getElementById(cid).innerHTML=html;
+}
+
+function saveCastNotes(){
+  if(!castEntryId) return;
+  const notes=document.getElementById('castNotes').value.trim();
+  const entries=load();
+  const idx=entries.findIndex(e=>e.id===castEntryId);
+  if(idx>=0){entries[idx].notes=notes;save(entries);}
+  toast('Заметки сохранены');
+}
+
+function resetCast(){
+  castEntryId=null;
+  document.getElementById('castResult').style.display='none';
+  document.getElementById('castQuestion').value='';
+  document.getElementById('castNotes').value='';
+  document.getElementById('coinArea').style.display='none';
+  document.getElementById('coinRows').innerHTML='';
+}
+
+// ══════════════════════════════════════
+// AI INTERPRETATION
+
+
+// ══════════════════════════════════════
+// MANUAL
+// ══════════════════════════════════════
+let manLinesState=null,manNumState=null;
+const LINE_OPTS=[{v:9,l:'9 — ян →',yang:true,moving:true},{v:7,l:'7 — ян',yang:true,moving:false},{v:8,l:'8 — инь',yang:false,moving:false},{v:6,l:'6 — инь →',yang:false,moving:true}];
+const manSel=new Array(6).fill(null);
+let manBuilt=false;
+
+function switchMode(m,btn){
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mode-'+m).classList.add('active');
+}
+
+function initManual(){
+  if(manBuilt) return;
+  manBuilt=true;
+  const b=document.getElementById('lineBuilder');
+  for(let i=0;i<6;i++){
+    const row=document.createElement('div');
+    row.className='lb-row';
+    row.innerHTML=`<div class="lb-num">Линия ${i+1}</div><div class="lb-btns">${LINE_OPTS.map(o=>`<button class="lb-btn" onclick="pickLine(this,${i},${o.v})">${o.l}</button>`).join('')}</div>`;
+    b.appendChild(row);
+  }
+  const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  const ds=now.toISOString().slice(0,16);
+  document.getElementById('manLinesDate').value=ds;
+  document.getElementById('manNumDate').value=ds;
+}
+
+function pickLine(btn,li,v){
+  manSel[li]=v;
+  btn.closest('.lb-btns').querySelectorAll('.lb-btn').forEach(b=>b.className='lb-btn');
+  const opt=LINE_OPTS.find(o=>o.v===v);
+  btn.className='lb-btn '+(opt.moving?(opt.yang?'s-myang':'s-myin'):(opt.yang?'s-yang':'s-yin'));
+  document.getElementById('manLinesResult').style.display='none';
+  document.getElementById('manLinesSave').disabled=true;
+  manLinesState=null;
+}
+
+function calcManualLines(){
+  if(manSel.some(v=>v===null)){toast('Выбери значение для каждой из 6 линий');return;}
+  const lines=manSel.map(v=>{const o=LINE_OPTS.find(x=>x.v===v);return{value:v,yang:o.yang,moving:o.moving};});
+  const pri=findHex(lines);
+  let sec=null;
+  if(lines.some(l=>l.moving)) sec=findHex(lines.map(l=>({...l,yang:l.moving?!l.yang:l.yang})));
+  manLinesState={lines,pri,sec};
+  renderHexDisp('manLinesHexD',pri,sec);
+  document.getElementById('manLinesResult').style.display='block';
+  document.getElementById('manLinesSave').disabled=false;
+}
+
+function saveManualLines(){
+  if(!manLinesState) return;
+  const dv=document.getElementById('manLinesDate').value;
+  const entries=load();
+  entries.unshift({id:Date.now()+'',date:dv?new Date(dv).toISOString():new Date().toISOString(),question:document.getElementById('manLinesQ').value.trim(),notes:document.getElementById('manLinesNotes').value.trim(),primary:manLinesState.pri,secondary:manLinesState.sec,lines:manLinesState.lines.map(l=>({value:l.value,yang:l.yang,moving:l.moving})),source:'manual'});
+  save(entries);toast('Запись добавлена');
+  manLinesState=null;manSel.fill(null);
+  document.getElementById('lineBuilder').querySelectorAll('.lb-btn').forEach(b=>b.className='lb-btn');
+  document.getElementById('manLinesResult').style.display='none';
+  document.getElementById('manLinesSave').disabled=true;
+  document.getElementById('manLinesQ').value='';
+  document.getElementById('manLinesNotes').value='';
+}
+
+// ── By number ──
+function onNumInput(){
+  const n=parseInt(document.getElementById('manNumPri').value);
+  const preview=document.getElementById('manNumPriPreview');
+  if(n>=1&&n<=64){
+    document.getElementById('manNumPriGlyph').textContent=glyph(n);
+    document.getElementById('manNumPriName').textContent=HEX[n].ru;
+    document.getElementById('manNumPriCn').textContent=HEX[n].cn;
+    preview.style.opacity='1';
+  } else {
+    preview.style.opacity='0';
+  }
+  // Auto-compute secondary if moving lines checked
+  autoCalcSec();
+  document.getElementById('manNumResult').style.display='none';
+  document.getElementById('manNumSave').disabled=true;
+  manNumState=null;
+}
+
+function autoCalcSec(){
+  const n=parseInt(document.getElementById('manNumPri').value);
+  if(!n||n<1||n>64) return;
+  const movingIdxs=[...document.querySelectorAll('.mv-cb:checked')].map(cb=>parseInt(cb.value)-1);
+  if(!movingIdxs.length){
+    document.getElementById('manNumSec').value='';
+    document.getElementById('manNumSecPreview').style.opacity='0';
+    return;
+  }
+  const baseLine=[...HEX_LINES[n]];
+  const altLines=baseLine.map((v,i)=>movingIdxs.includes(i)?(v===1?0:1):v);
+  const altKey=altLines.join('');
+  for(let i=1;i<=64;i++){if(HEX_LINES[i].join('')===altKey){
+    document.getElementById('manNumSec').value=i;
+    document.getElementById('manNumSecPreview').textContent=glyph(i);
+    document.getElementById('manNumSecPreview').style.opacity='1';
+    return;
+  }}
+}
+
+document.addEventListener('change',function(e){if(e.target.classList.contains('mv-cb'))autoCalcSec();});
+
+function onSecInput(){
+  const n=parseInt(document.getElementById('manNumSec').value);
+  const prev=document.getElementById('manNumSecPreview');
+  if(n>=1&&n<=64){prev.textContent=glyph(n);prev.style.opacity='1';}
+  else{prev.style.opacity='0';}
+}
+
+function calcManualNum(){
+  const pri=parseInt(document.getElementById('manNumPri').value);
+  if(!pri||pri<1||pri>64){toast('Введи номер гексаграммы от 1 до 64');return;}
+  const movingIdxs=[...document.querySelectorAll('.mv-cb:checked')].map(cb=>parseInt(cb.value)-1);
+  const secVal=parseInt(document.getElementById('manNumSec').value);
+  const sec=(secVal>=1&&secVal<=64&&secVal!==pri)?secVal:null;
+
+  // Build synthetic lines from hexagram + moving
+  const baseL=HEX_LINES[pri];
+  const lines=baseL.map((v,i)=>({value:movingIdxs.includes(i)?(v===1?9:6):(v===1?7:8),yang:v===1,moving:movingIdxs.includes(i)}));
+
+  manNumState={lines,pri,sec};
+  renderHexDisp('manNumHexD',pri,sec);
+  document.getElementById('manNumResult').style.display='block';
+  document.getElementById('manNumSave').disabled=false;
+}
+
+function saveManualNum(){
+  if(!manNumState) return;
+  const dv=document.getElementById('manNumDate').value;
+  const entries=load();
+  entries.unshift({id:Date.now()+'',date:dv?new Date(dv).toISOString():new Date().toISOString(),question:document.getElementById('manNumQ').value.trim(),notes:document.getElementById('manNumNotes').value.trim(),primary:manNumState.pri,secondary:manNumState.sec,lines:manNumState.lines.map(l=>({value:l.value,yang:l.yang,moving:l.moving})),source:'manual'});
+  save(entries);toast('Запись добавлена');
+  manNumState=null;
+  document.getElementById('manNumPri').value='';
+  document.getElementById('manNumSec').value='';
+  document.querySelectorAll('.mv-cb').forEach(cb=>cb.checked=false);
+  document.getElementById('manNumResult').style.display='none';
+  document.getElementById('manNumSave').disabled=true;
+  document.getElementById('manNumQ').value='';
+  document.getElementById('manNumNotes').value='';
+  document.getElementById('manNumPriPreview').style.opacity='0';
+  document.getElementById('manNumSecPreview').style.opacity='0';
+}
+
+// ══════════════════════════════════════
+// JOURNAL
+// ══════════════════════════════════════
+function fmtDate(iso){const d=new Date(iso);return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}
+
+function miniLine(line){
+  const c=line.moving?'var(--red)':(line.yang?'var(--ink-mid)':'var(--ink-dim)');
+  if(line.yang) return `<div style="display:flex;flex-direction:column;gap:1px;width:20px;"><div style="height:2px;background:${c};"></div></div>`;
+  return `<div style="display:flex;gap:2px;width:20px;align-items:center;"><div style="height:2px;flex:1;background:${c};"></div><div style="width:7px;"></div><div style="height:2px;flex:1;background:${c};"></div></div>`;
+}
+
+function renderJournal(){
+  const entries=load();
+  const search=document.getElementById('jSearch').value.toLowerCase();
+  const hexF=document.getElementById('jHexFilter').value;
+  const sort=document.getElementById('jSort').value;
+  const hc={};
+  entries.forEach(e=>{hc[e.primary]=(hc[e.primary]||0)+1;});
+  const cur=hexF;
+  const sel=document.getElementById('jHexFilter');
+  sel.innerHTML='<option value="">Все гексаграммы</option>';
+  Object.entries(hc).sort((a,b)=>b[1]-a[1]).forEach(([idx,cnt])=>{
+    const h=HEX[+idx];if(!h)return;
+    const o=document.createElement('option');
+    o.value=idx;o.textContent=`${glyph(+idx)} ${h.ru} (${cnt})`;o.selected=(cur===idx);
+    sel.appendChild(o);
+  });
+  let filtered=entries.filter(e=>(
+    (!search||((e.question||'').toLowerCase().includes(search)||(e.notes||'').toLowerCase().includes(search)))&&
+    (!hexF||e.primary.toString()===hexF)
+  ));
+  if(sort==='oldest')filtered.reverse();
+  const list=document.getElementById('jList');
+  if(!filtered.length){list.innerHTML=`<div class="empty-state"><span class="empty-cn">卦</span><p>${entries.length===0?'Журнал пуст. Сделай первый бросок.':'Ничего не найдено.'}</p></div>`;return;}
+  list.innerHTML=filtered.map(e=>{
+    const h1=HEX[e.primary],h2=e.secondary?HEX[e.secondary]:null;
+    const mini=[...e.lines].reverse().map(miniLine).join('');
+    const srcLabel=e.source==='manual'?'ручной':e.source==='manual-num'?'по номеру':'авто';
+    return `<div class="j-entry" id="je-${e.id}">
+      <button class="del-btn" onclick="event.stopPropagation();delEntry('${e.id}')">✕</button>
+      <div class="j-top" onclick="toggleJ('${e.id}')">
+        <div class="j-glyph">${glyph(e.primary)}${h2?'<span style="font-size:1rem;color:var(--red);opacity:.5;">→</span>'+glyph(e.secondary):''}</div>
+        <div class="j-meta">
+          <div class="j-hex-name">${h1.ru}${h2?' → '+h2.ru:''}</div>
+          <div class="j-hex-sub">№${e.primary}${h2?' → №'+e.secondary:''} · ${srcLabel}</div>
+          ${e.question?`<div class="j-q">${e.question}</div>`:''}
+        </div>
+        <div class="j-date">${fmtDate(e.date)}</div>
+      </div>
+      <div class="j-mini" style="gap:4px;">${mini}</div>
+      <div class="j-body" id="jbody-${e.id}">
+        ${e.notes?`<div class="j-notes">${e.notes}</div>`:'<div style="color:var(--ink-dim);font-style:italic;font-size:.82rem;">Заметок нет</div>'}
+        <div class="j-note-edit" id="jedit-${e.id}">
+          <textarea id="jtxt-${e.id}" rows="3" placeholder="Напиши заметку...">${e.notes||''}</textarea>
+
+```
+      <div class="j-note-actions">
+        <button class="btn btn-primary" style="font-size:.78rem;padding:.45rem 1rem;" onclick="updateNote('${e.id}')">Сохранить</button>
+        <button class="btn-ghost" onclick="toggleNoteEdit('${e.id}')">Отмена</button>
+      </div>
+    </div>
+    <div style="margin-top:.6rem;">
+      <button class="btn-ghost" style="font-size:.75rem;color:var(--gold);padding:.3rem 0;" onclick="toggleNoteEdit('${e.id}')">✏ Редактировать заметку</button>
+    </div>
+  </div>
+</div>`;
+```
+
+}).join(’’);
+}
+
+function toggleJ(id){document.getElementById(‘je-’+id)?.classList.toggle(‘open’);}
+function toggleNoteEdit(id){document.getElementById(‘jedit-’+id)?.classList.toggle(‘open’);}
+
+function updateNote(id){
+const txt=document.getElementById(‘jtxt-’+id)?.value.trim()||’’;
+const entries=load();
+const idx=entries.findIndex(e=>e.id===id);
+if(idx>=0){entries[idx].notes=txt;save(entries);}
+toast(‘Заметка обновлена’);
+renderJournal();
+// Re-open entry
+setTimeout(()=>{
+const el=document.getElementById(‘je-’+id);
+if(el)el.classList.add(‘open’);
+},50);
+}
+
+function delEntry(id){if(!confirm(‘Удалить запись?’))return;save(load().filter(e=>e.id!==id));renderJournal();toast(‘Удалено’);}
+
+// ══════════════════════════════════════
+// STATS
+// ══════════════════════════════════════
+function renderStats(){
+const entries=load(),c=document.getElementById(‘statsContent’);
+if(!entries.length){c.innerHTML=`<div class="empty-state"><span class="empty-cn">统</span><p>Статистика появится после первых бросков.</p></div>`;return;}
+
+const total=entries.length;
+const todayStr=new Date().toDateString();
+const todayCount=entries.filter(e=>new Date(e.date).toDateString()===todayStr).length;
+const oldest=new Date(entries[entries.length-1].date);
+const now=new Date();
+const daysDiff=Math.max(1,Math.round((now-oldest)/(1000*60*60*24))+1);
+const avgPerDay=(total/daysDiff).toFixed(1);
+const stable=entries.filter(e=>e.lines&&!e.lines.some(l=>l.moving)).length;
+
+// Топ 5 гексаграмм с ≥ 2 повторениями
+const hc={};
+entries.forEach(e=>{hc[e.primary]=(hc[e.primary]||0)+1;});
+const topH=Object.entries(hc).filter(([,cnt])=>cnt>=2).sort((a,b)=>b[1]-a[1]).slice(0,5);
+const maxH=topH[0]?.[1]||1;
+
+// Подвижные линии по позициям (1–6)
+const lf=[0,0,0,0,0,0];
+let movingTotal=0;
+entries.forEach(e=>{
+if(e.lines) e.lines.forEach((l,i)=>{if(l.moving){lf[i]++;movingTotal++;}});
+});
+const maxL=Math.max(…lf,1);
+// Только линии с ≥ 2 срабатываниями
+const activeLines=lf.map((cnt,i)=>({pos:i+1,cnt})).filter(x=>x.cnt>=2).sort((a,b)=>b.cnt-a.cnt);
+
+// Частота по дням — 14 дней
+const dayCounts={};
+entries.forEach(e=>{
+const dk=new Date(e.date).toLocaleDateString(‘ru-RU’,{day:‘2-digit’,month:‘2-digit’});
+dayCounts[dk]=(dayCounts[dk]||0)+1;
+});
+const dayBars=[];
+for(let d=13;d>=0;d–){
+const dt=new Date();dt.setDate(dt.getDate()-d);
+const dk=dt.toLocaleDateString(‘ru-RU’,{day:‘2-digit’,month:‘2-digit’});
+dayBars.push({label:dk,cnt:dayCounts[dk]||0});
+}
+const maxDay=Math.max(…dayBars.map(x=>x.cnt),1);
+const todayLabel=new Date().toLocaleDateString(‘ru-RU’,{day:‘2-digit’,month:‘2-digit’});
+
+c.innerHTML=`
+<div class="stats-grid">
+<div class="stat-card"><span class="stat-val">${total}</span><div class="stat-lbl">Бросков</div></div>
+<div class="stat-card"><span class="stat-val">${todayCount}</span><div class="stat-lbl">За сегодня</div></div>
+<div class="stat-card"><span class="stat-val">${avgPerDay}</span><div class="stat-lbl">В среднем / день</div></div>
+<div class="stat-card"><span class="stat-val">${stable}</span><div class="stat-lbl">Стабильных</div></div>
+</div>
+
+```
+<div class="chart-sec">
+  <h3>Частота бросков — последние 14 дней</h3>
+  <div style="display:flex;align-items:flex-end;gap:3px;height:64px;padding:0 2px;">
+    ${dayBars.map(d=>{
+      const h=Math.round((d.cnt/maxDay)*56);
+      const isToday=d.label===todayLabel;
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+        ${d.cnt?`<div style="font-size:.5rem;color:${isToday?'var(--gold)':'var(--ink-dim)'};margin-bottom:1px;">${d.cnt}</div>`:'<div style="font-size:.5rem;margin-bottom:1px;">&nbsp;</div>'}
+        <div style="width:100%;height:${h||2}px;background:${isToday?'var(--gold)':'var(--border)'};border-radius:1px 1px 0 0;min-height:2px;"></div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div style="display:flex;gap:3px;padding:3px 2px 0;">
+    ${dayBars.map((d,i)=>`<div style="flex:1;text-align:center;font-size:.52rem;color:var(--ink-dim);line-height:1;">${i===0||i===6||i===13?d.label.replace('.','/').slice(0,5):'·'}</div>`).join('')}
+  </div>
+</div>
+
+<div class="chart-sec">
+  <h3>Часто выпадающие гексаграммы</h3>
+  ${topH.length===0
+    ?`<p style="color:var(--ink-dim);font-style:italic;font-size:.85rem;">Повторений пока нет — паттерны видны после нескольких бросков одной гексаграммы</p>`
+    :topH.map(([i,cnt])=>{const h=HEX[+i];return`<div class="bar-row">
+      <div class="bar-lbl">${glyph(+i)}</div>
+      <div class="bar-name">${h.ru}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${cnt/maxH*100}%"></div></div>
+      <div class="bar-cnt">${cnt}</div>
+    </div>`;}).join('')
+  }
+  <p style="color:var(--ink-dim);font-style:italic;font-size:.72rem;margin-top:.5rem;">Только гексаграммы с 2+ повторениями, не более 5</p>
+</div>
+
+<div class="chart-sec">
+  <h3>Активные позиции подвижных линий</h3>
+  ${activeLines.length===0
+    ?`<p style="color:var(--ink-dim);font-style:italic;font-size:.85rem;">Пока нет повторяющихся подвижных линий — паттерн виден после накопления бросков</p>`
+    :activeLines.map(x=>`<div class="bar-row">
+      <div class="bar-lbl" style="font-family:'Lora',serif;font-size:.82rem;color:var(--red);">${x.pos}</div>
+      <div class="bar-name" style="color:var(--ink-mid);">Линия ${x.pos}</div>
+      <div class="bar-track"><div class="bar-fill bar-fill-r" style="width:${x.cnt/maxL*100}%"></div></div>
+      <div class="bar-cnt">${x.cnt}</div>
+    </div>`).join('')
+  }
+  <p style="color:var(--ink-dim);font-style:italic;font-size:.72rem;margin-top:.5rem;">Только позиции с 2+ срабатываниями</p>
+</div>`;
+```
+
+}
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+function toast(msg){const t=document.getElementById(‘toast’);t.textContent=msg;t.classList.add(‘show’);setTimeout(()=>t.classList.remove(‘show’),2400);}
+</script>
+
+</body>
+</html>
