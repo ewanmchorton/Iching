@@ -145,8 +145,6 @@ textarea{resize:vertical;}
 .j-hex-name{font-family:'Playfair Display',serif;font-size:.9rem;font-style:italic;}
 .j-hex-sub{font-size:.67rem;color:var(--ink-dim);letter-spacing:.07em;margin-top:.1rem;}
 .j-q{font-size:.84rem;color:var(--ink-mid);margin-top:.3rem;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.j-q::before{content:'« ';color:var(--border);}
-.j-q::after{content:' »';color:var(--border);}
 .j-date{font-size:.66rem;color:var(--ink-dim);flex-shrink:0;text-align:right;line-height:1.5;}
 .j-mini{display:flex;gap:3px;padding:0 1rem .75rem;}
 .j-body{display:none;padding:.7rem 1rem 1rem;border-top:1px solid var(--border-light);}
@@ -819,20 +817,22 @@ function renderJournal(){
   if(!filtered.length){list.innerHTML=`<div class="empty-state"><span class="empty-cn">卦</span><p>${entries.length===0?'Журнал пуст. Сделай первый бросок.':'Ничего не найдено.'}</p></div>`;return;}
   list.innerHTML=filtered.map(e=>{
     const h1=HEX[e.primary],h2=e.secondary?HEX[e.secondary]:null;
-    const mini=[...e.lines].reverse().map(miniLine).join('');
-    const srcLabel=e.source==='manual'?'ручной':e.source==='manual-num'?'по номеру':'авто';
     return `<div class="j-entry" id="je-${e.id}">
       <button class="del-btn" onclick="event.stopPropagation();delEntry('${e.id}')">✕</button>
       <div class="j-top" onclick="toggleJ('${e.id}')">
-        <div class="j-glyph">${glyph(e.primary)}${h2?'<span style="font-size:1rem;color:var(--red);opacity:.5;">→</span>'+glyph(e.secondary):''}</div>
-        <div class="j-meta">
-          <div class="j-hex-name">${h1.ru}${h2?' → '+h2.ru:''}</div>
-          <div class="j-hex-sub">№${e.primary}${h2?' → №'+e.secondary:''} · ${srcLabel}</div>
-          ${e.question?`<div class="j-q">${e.question}</div>`:''}
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;width:100%;">
+          <div style="flex:1;min-width:0;">
+            ${e.question?`<div class="j-q" style="font-size:.95rem;margin-bottom:.45rem;white-space:normal;">${e.question}</div>`:''}
+            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:nowrap;">
+              <span style="font-family:'Noto Serif SC',serif;font-size:1.4rem;color:var(--gold);line-height:1;">${glyph(e.primary)}</span>
+              ${h2?`<span style="color:var(--red);opacity:.5;font-size:.9rem;">→</span><span style="font-family:'Noto Serif SC',serif;font-size:1.4rem;color:var(--gold);line-height:1;">${glyph(e.secondary)}</span>`:''}
+              <span style="font-style:italic;font-size:.88rem;color:var(--ink);">${h1.ru}${h2?' → '+h2.ru:''}</span>
+            </div>
+            <div style="font-size:.75rem;color:var(--ink-dim);margin-top:.2rem;">№${e.primary}${h2?' → №'+e.secondary:''}</div>
+          </div>
+          <div class="j-date" style="white-space:nowrap;flex-shrink:0;">${fmtDate(e.date)}</div>
         </div>
-        <div class="j-date">${fmtDate(e.date)}</div>
       </div>
-      <div class="j-mini" style="gap:4px;">${mini}</div>
       <div class="j-body" id="jbody-${e.id}">
         ${e.notes?`<div class="j-notes">${e.notes}</div>`:'<div style="color:var(--ink-dim);font-style:italic;font-size:.82rem;">Заметок нет</div>'}
         <div class="j-note-edit" id="jedit-${e.id}">
