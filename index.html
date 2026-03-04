@@ -590,10 +590,11 @@ function addLineVis(cid,idx,line){
   requestAnimationFrame(()=>el.classList.add('show'));
 }
 
-function renderHexDisp(cid,pri,sec){
+function renderHexDisp(cid,pri,sec,lines){
   const h1=HEX[pri];
-  let html=`<div class="hex-card"><span class="hex-glyph">${glyph(pri)}</span><div class="hex-num">№ ${pri}</div><div class="hex-cn">${h1.cn}</div><div class="hex-ru">${h1.ru}</div></div>`;
-  if(sec&&sec!==pri){const h2=HEX[sec];html+=`<div class="hex-arrow">→</div><div class="hex-card"><span class="hex-glyph">${glyph(sec)}</span><div class="hex-num">№ ${sec}</div><div class="hex-cn">${h2.cn}</div><div class="hex-ru">${h2.ru}</div></div>`;}
+  const secLines=lines?lines.map(l=>({yang:l.moving?!l.yang:l.yang,moving:false})):null;
+  let html=`<div class="hex-card">${makeHexSVG(pri,lines)}<div class="hex-num">№ ${pri}</div><div class="hex-cn">${h1.cn}</div><div class="hex-ru">${h1.ru}</div></div>`;
+  if(sec&&sec!==pri){const h2=HEX[sec];html+=`<div class="hex-arrow">→</div><div class="hex-card">${makeHexSVG(sec,secLines)}<div class="hex-num">№ ${sec}</div><div class="hex-cn">${h2.cn}</div><div class="hex-ru">${h2.ru}</div></div>`;}
   document.getElementById(cid).innerHTML=html;
 }
 
