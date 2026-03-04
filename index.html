@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>易 И Цзин — Журнал</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
@@ -33,7 +33,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .container-wide{max-width:960px;margin:0 auto;padding:2rem 1.5rem;}
 .sec-title{font-family:'Playfair Display',serif;font-size:.8rem;font-weight:400;color:var(--ink-dim);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.9rem;padding-bottom:.5rem;border-bottom:1px solid var(--border-light);}
 label.fl{display:block;font-size:.67rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:.4rem;}
-textarea,input[type=text],input[type=number],input[type=datetime-local],select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--ink);font-family:'Lora',serif;font-size:.91rem;padding:.68rem .9rem;outline:none;transition:border-color .15s,box-shadow .15s;border-radius:1px;}
+textarea,input[type=text],input[type=number],input[type=datetime-local],select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--ink);font-family:'Lora',serif;font-size:1rem;padding:.68rem .9rem;outline:none;transition:border-color .15s,box-shadow .15s;border-radius:1px;}
 textarea:focus,input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(139,105,20,.1);}
 textarea{resize:vertical;}
 .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.62rem 1.25rem;font-family:'Lora',serif;font-size:.84rem;letter-spacing:.06em;cursor:pointer;border-radius:1px;transition:all .15s;border:1px solid transparent;}
@@ -73,7 +73,7 @@ textarea{resize:vertical;}
 .line-vis-tag.mv{color:var(--red);}
 
 /* ── HEX DISPLAY ── */
-.hex-display{display:flex;align-items:center;justify-content:center;gap:2rem;padding:1.3rem 0;flex-wrap:wrap;}
+.hex-display{display:flex;align-items:center;justify-content:center;gap:2rem;padding:1.3rem 0;flex-wrap:nowrap;overflow-x:auto;}
 .hex-card{text-align:center;padding:1rem 1.5rem;background:var(--surface);border:1px solid var(--border);box-shadow:0 2px 10px var(--sh);}
 .hex-glyph{font-family:'Noto Serif SC',serif;font-size:3.5rem;color:var(--gold);display:block;line-height:1.1;}
 .hex-num{font-size:.65rem;letter-spacing:.2em;color:var(--ink-dim);text-transform:uppercase;margin-top:.3rem;}
@@ -114,7 +114,7 @@ textarea{resize:vertical;}
 .line-builder{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem;}
 .lb-row{display:flex;align-items:center;gap:.7rem;background:var(--surface);border:1px solid var(--border-light);padding:.5rem .85rem;}
 .lb-num{font-size:.67rem;color:var(--ink-dim);width:56px;font-style:italic;}
-.lb-btns{display:flex;gap:.3rem;flex:1;flex-wrap:wrap;}
+.lb-btns{display:flex;gap:.3rem;flex:1;flex-wrap:nowrap;overflow-x:auto;}
 .lb-btn{flex:1;min-width:68px;padding:.32rem .3rem;border:1px solid var(--border);background:none;color:var(--ink-mid);font-family:'Lora',serif;font-size:.72rem;cursor:pointer;transition:all .13s;border-radius:1px;}
 .lb-btn:hover{border-color:var(--gold);color:var(--gold);}
 .s-yang{background:rgba(139,105,20,.1);border-color:var(--gold)!important;color:var(--gold)!important;}
@@ -124,7 +124,7 @@ textarea{resize:vertical;}
 
 /* hex number input */
 .hex-number-block{background:var(--surface);border:1px solid var(--border-light);padding:1.1rem;}
-.hex-number-row{display:flex;gap:.8rem;align-items:flex-end;flex-wrap:wrap;}
+.hex-number-row{display:flex;gap:.8rem;align-items:flex-end;flex-wrap:nowrap;overflow-x:auto;}
 .hex-number-row > div{flex:1;min-width:100px;}
 .hex-number-row input[type=number]{text-align:center;font-size:1.2rem;font-family:'Playfair Display',serif;}
 .moving-lines-input{margin-top:.9rem;}
@@ -133,7 +133,7 @@ textarea{resize:vertical;}
 .moving-cb input{width:auto;padding:0;border:none;}
 
 /* ── JOURNAL ── */
-.j-toolbar{display:flex;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap;}
+.j-toolbar{display:flex;gap:.7rem;margin-bottom:1rem;flex-wrap:nowrap;overflow-x:auto;}
 .j-toolbar input{flex:1;min-width:150px;font-size:.83rem;padding:.5rem .82rem;}
 .j-toolbar select{width:auto;min-width:135px;font-size:.83rem;padding:.5rem .82rem;}
 .j-list{display:flex;flex-direction:column;gap:.72rem;}
@@ -567,7 +567,7 @@ async function castAll(){
   save(entries);
   castEntryId=entry.id;
 
-  renderHexDisp('castHexD',pri,sec);
+  renderHexDisp('castHexD',pri,sec,lines);
   document.getElementById('castResult').style.display='block';
   btn.disabled=false;btn.textContent='Бросить монеты';
 
@@ -590,6 +590,19 @@ function addLineVis(cid,idx,line){
   requestAnimationFrame(()=>el.classList.add('show'));
 }
 
+function makeHexSVG(hexNum,lines){
+  const lineData=lines||HEX_LINES[hexNum].map(v=>({yang:v===1,moving:false}));
+  const W=76,H=60,lh=3.5,gap=11;
+  let rects='';
+  for(let i=5;i>=0;i--){
+    const y=(5-i)*gap;
+    const l=lineData[i];
+    const op=l.moving?' opacity="0.28"':'';
+    if(l.yang){rects+=`<rect x="0" y="${y}" width="${W}" height="${lh}" rx="1" fill="#8b6914"${op}/>`;}
+    else{rects+=`<rect x="0" y="${y}" width="32" height="${lh}" rx="1" fill="#8b6914"${op}/><rect x="44" y="${y}" width="32" height="${lh}" rx="1" fill="#8b6914"${op}/>`;}
+  }
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:0 auto;">${rects}</svg>`;
+}
 function renderHexDisp(cid,pri,sec,lines){
   const h1=HEX[pri];
   const secLines=lines?lines.map(l=>({yang:l.moving?!l.yang:l.yang,moving:false})):null;
@@ -668,7 +681,7 @@ function calcManualLines(){
   let sec=null;
   if(lines.some(l=>l.moving)) sec=findHex(lines.map(l=>({...l,yang:l.moving?!l.yang:l.yang})));
   manLinesState={lines,pri,sec};
-  renderHexDisp('manLinesHexD',pri,sec);
+  renderHexDisp('manLinesHexD',pri,sec,lines);
   document.getElementById('manLinesResult').style.display='block';
   document.getElementById('manLinesSave').disabled=false;
 }
@@ -747,7 +760,7 @@ function calcManualNum(){
   const lines=baseL.map((v,i)=>({value:movingIdxs.includes(i)?(v===1?9:6):(v===1?7:8),yang:v===1,moving:movingIdxs.includes(i)}));
 
   manNumState={lines,pri,sec};
-  renderHexDisp('manNumHexD',pri,sec);
+  renderHexDisp('manNumHexD',pri,sec,lines);
   document.getElementById('manNumResult').style.display='block';
   document.getElementById('manNumSave').disabled=false;
 }
