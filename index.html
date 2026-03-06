@@ -798,19 +798,22 @@ function renderJournal(){
   const hexF=document.getElementById('jHexFilter').value;
   const sort=document.getElementById('jSort').value;
   const hc={};
-  entries.forEach(e=>{hc[e.primary]=(hc[e.primary]||0)+1;});
+  entries.forEach(e=>{
+    hc[e.primary]=(hc[e.primary]||0)+1;
+    if(e.secondary) hc[e.secondary]=(hc[e.secondary]||0)+1;
+  });
   const cur=hexF;
   const sel=document.getElementById('jHexFilter');
   sel.innerHTML='<option value="">Все гексаграммы</option>';
   Object.entries(hc).sort((a,b)=>b[1]-a[1]).forEach(([idx,cnt])=>{
     const h=HEX[+idx];if(!h)return;
     const o=document.createElement('option');
-    o.value=idx;o.textContent=`${glyph(+idx)} ${h.ru} (${cnt})`;o.selected=(cur===idx);
+    o.value=idx;o.textContent=`№${idx} ${h.ru} (${cnt})`;o.selected=(cur===idx);
     sel.appendChild(o);
   });
   let filtered=entries.filter(e=>(
-    (!search||((e.question||'').toLowerCase().includes(search)||(e.notes||'').toLowerCase().includes(search)))&&
-    (!hexF||e.primary.toString()===hexF)
+    (!search||((e.question||'').toLowerCase().includes(search)||(e.notes||'').toLowerCase().includes(search)||(e.primary.toString()).includes(search)||(e.secondary?.toString()||'').includes(search)||(HEX[e.primary]?.ru||'').toLowerCase().includes(search)))&&
+    (!hexF||e.primary.toString()===hexF||e.secondary?.toString()===hexF)
   ));
   if(sort==='oldest')filtered.reverse();
   const list=document.getElementById('jList');
