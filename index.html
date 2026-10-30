@@ -334,6 +334,10 @@ textarea{resize:vertical;}
     </select>
   </div>
   <div class="j-list" id="jList"></div>
+  <div id="expBox" style="margin-top:1.4rem;padding-top:1rem;border-top:1px solid var(--border,#d8cdb8);">
+    <button class="btn btn-outline" onclick="exportJournal()" style="width:100%;">Экспорт журнала (копировать)</button>
+    <textarea id="expText" readonly style="display:none;width:100%;height:110px;margin-top:.6rem;font-size:.7rem;" onclick="this.select()"></textarea>
+  </div>
 </div>
 </div>
 
@@ -607,7 +611,58 @@ function renderHexDisp(cid,pri,sec,lines){
   let html=`<div class="hex-card">${makeHexSVG(pri,lines)}<div class="hex-num">№ ${pri}</div><div class="hex-cn">${h1.cn}</div><div class="hex-ru">${h1.ru}</div></div>`;
   if(sec&&sec!==pri){const h2=HEX[sec];html+=`<div class="hex-arrow">→</div><div class="hex-card">${makeHexSVG(sec,secLines)}<div class="hex-num">№ ${sec}</div><div class="hex-cn">${h2.cn}</div><div class="hex-ru">${h2.ru}</div></div>`;}
   document.getElementById(cid).innerHTML=html;
+  mountShare(cid,{pri,sec,lines});
 }
+
+// ══════════════════════════════════════
+// РАЗБОР В CLAUDE (бесплатно, без API)
+// ══════════════════════════════════════
+const SHARE_Q={castHexD:'castQuestion',manLinesHexD:'manLinesQ',manNumHexD:'manNumQ'};
+const shareState={};
+function shareText(pri,sec,lines,question){
+  const mv=(lines||[]).map((l,i)=>l.moving?i+1:null).filter(Boolean);
+  const notation=pri+(mv.length?' ('+mv.join(',')+')':'')+(sec&&sec!==pri?' → '+sec:'');
+  return (question?question+'\n':'')+notation+'\n'+(question?'трактовка':'общая трактовка');
+}
+function mountShare(cid,st){
+  shareState[cid]=st;
+  let box=document.getElementById(cid+'Share');
+  if(!box){
+    box=document.createElement('div');
+    box.id=cid+'Share';
+    box.style.cssText='display:flex;gap:.5rem;justify-content:center;margin:-.3rem 0 1rem;flex-wrap:wrap;';
+    document.getElementById(cid).insertAdjacentElement('afterend',box);
+  }
+  box.innerHTML=`<button class="btn btn-outline" style="padding:.4rem .9rem;font-size:.78rem;" onclick="shareCopy('${cid}')">Скопировать для Claude</button>
+    <button class="btn btn-outline" style="padding:.4rem .9rem;font-size:.78rem;" onclick="shareOpen('${cid}')">Открыть в Claude</button>`;
+}
+function currentShare(cid){
+  const st=shareState[cid];if(!st)return '';
+  const qEl=document.getElementById(SHARE_Q[cid]);
+  return shareText(st.pri,st.sec,st.lines,qEl?qEl.value.trim():'');
+}
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(t);}
+  const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}
+  document.body.removeChild(ta);return Promise.resolve();
+}
+function exportJournal(){
+  const data=JSON.stringify(load());
+  const ta=document.getElementById('expText');
+  ta.value=data;ta.style.display='block';ta.focus();ta.select();
+  copyText(data).then(()=>toast('Журнал скопирован ('+load().length+' записей)')).catch(()=>toast('Выдели текст и скопируй вручную'));
+}
+function openClaude(t){
+  const url='https://claude.ai/new?q='+encodeURIComponent(t);
+  const tg=window.Telegram&&window.Telegram.WebApp;
+  if(tg&&tg.openLink){tg.openLink(url);}else{window.open(url,'_blank');}
+}
+function shareCopy(cid){copyText(currentShare(cid)).then(()=>toast('Скопировано — вставь в Claude'));}
+function shareOpen(cid){openClaude(currentShare(cid));}
+function entryShare(id){const e=load().find(x=>x.id===id);return e?shareText(e.primary,e.secondary,e.lines,e.question||''):'';}
+function entryShareCopy(id){copyText(entryShare(id)).then(()=>toast('Скопировано — вставь в Claude'));}
+function entryShareOpen(id){openClaude(entryShare(id));}
 
 function saveCastNotes(){
   if(!castEntryId) return;
@@ -850,6 +905,10 @@ function renderJournal(){
         <div style="margin-top:.6rem;">
           <button class="btn-ghost" style="font-size:.75rem;color:var(--gold);padding:.3rem 0;" onclick="toggleNoteEdit('${e.id}')">✏ Редактировать заметку</button>
         </div>
+        <div style="margin-top:.5rem;display:flex;gap:1rem;flex-wrap:wrap;">
+          <button class="btn-ghost" style="font-size:.75rem;color:var(--gold);padding:.3rem 0;" onclick="entryShareCopy('${e.id}')">Скопировать для Claude</button>
+          <button class="btn-ghost" style="font-size:.75rem;color:var(--gold);padding:.3rem 0;" onclick="entryShareOpen('${e.id}')">Открыть в Claude</button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -887,19 +946,23 @@ function renderStats(){
   const oldest=new Date(entries[entries.length-1].date);
   const now=new Date();
   const daysDiff=Math.max(1,Math.round((now-oldest)/(1000*60*60*24))+1);
-  const avgPerDay=(total/daysDiff).toFixed(1);
+  // Окно — последние 14 дней
+  const cutoff=new Date();cutoff.setHours(0,0,0,0);cutoff.setDate(cutoff.getDate()-13);
+  const recent=entries.filter(e=>new Date(e.date)>=cutoff);
+  const windowDays=Math.min(14,daysDiff);
+  const avgPerDay=(recent.length/windowDays).toFixed(1);
   const stable=entries.filter(e=>e.lines&&!e.lines.some(l=>l.moving)).length;
 
   // Топ 5 гексаграмм с ≥ 2 повторениями
   const hc={};
-  entries.forEach(e=>{hc[e.primary]=(hc[e.primary]||0)+1;});
+  recent.forEach(e=>{hc[e.primary]=(hc[e.primary]||0)+1;});
   const topH=Object.entries(hc).filter(([,cnt])=>cnt>=2).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const maxH=topH[0]?.[1]||1;
 
   // Подвижные линии по позициям (1–6)
   const lf=[0,0,0,0,0,0];
   let movingTotal=0;
-  entries.forEach(e=>{
+  recent.forEach(e=>{
     if(e.lines) e.lines.forEach((l,i)=>{if(l.moving){lf[i]++;movingTotal++;}});
   });
   const maxL=Math.max(...lf,1);
@@ -925,7 +988,7 @@ function renderStats(){
     <div class="stats-grid">
       <div class="stat-card"><span class="stat-val">${total}</span><div class="stat-lbl">Бросков</div></div>
       <div class="stat-card"><span class="stat-val">${todayCount}</span><div class="stat-lbl">За сегодня</div></div>
-      <div class="stat-card"><span class="stat-val">${avgPerDay}</span><div class="stat-lbl">В среднем / день</div></div>
+      <div class="stat-card"><span class="stat-val">${avgPerDay}</span><div class="stat-lbl">В среднем / день · 14 дн.</div></div>
       <div class="stat-card"><span class="stat-val">${stable}</span><div class="stat-lbl">Стабильных</div></div>
     </div>
 
@@ -947,7 +1010,7 @@ function renderStats(){
     </div>
 
     <div class="chart-sec">
-      <h3>Часто выпадающие гексаграммы</h3>
+      <h3>Часто выпадающие гексаграммы — 14 дней</h3>
       ${topH.length===0
         ?`<p style="color:var(--ink-dim);font-style:italic;font-size:.85rem;">Повторений пока нет — паттерны видны после нескольких бросков одной гексаграммы</p>`
         :topH.map(([i,cnt])=>{const h=HEX[+i];return`<div class="bar-row">
@@ -957,11 +1020,11 @@ function renderStats(){
           <div class="bar-cnt">${cnt}</div>
         </div>`;}).join('')
       }
-      <p style="color:var(--ink-dim);font-style:italic;font-size:.72rem;margin-top:.5rem;">Только гексаграммы с 2+ повторениями, не более 5</p>
+      <p style="color:var(--ink-dim);font-style:italic;font-size:.72rem;margin-top:.5rem;">За последние 14 дней. Только гексаграммы с 2+ повторениями, не более 5</p>
     </div>
 
     <div class="chart-sec">
-      <h3>Активные позиции подвижных линий</h3>
+      <h3>Активные позиции подвижных линий — 14 дней</h3>
       ${activeLines.length===0
         ?`<p style="color:var(--ink-dim);font-style:italic;font-size:.85rem;">Пока нет повторяющихся подвижных линий — паттерн виден после накопления бросков</p>`
         :activeLines.map(x=>`<div class="bar-row">
@@ -971,7 +1034,7 @@ function renderStats(){
           <div class="bar-cnt">${x.cnt}</div>
         </div>`).join('')
       }
-      <p style="color:var(--ink-dim);font-style:italic;font-size:.72rem;margin-top:.5rem;">Только позиции с 2+ срабатываниями</p>
+      <p style="color:var(--ink-dim);font-style:italic;font-size:.72rem;margin-top:.5rem;">За последние 14 дней. Только позиции с 2+ срабатываниями</p>
       ${activeLines.length>0?linePatternText(activeLines):''}
     </div>`;
 }
