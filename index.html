@@ -192,11 +192,10 @@ textarea{resize:vertical;}
 <header>
   <div class="logo-wrap">
     <div class="logo-char">易</div>
-    <div class="logo-text"><h1>И Цзин</h1><p>Журнал бросков</p></div>
+    <div class="logo-text"><h1>И Цзин</h1><p>Журнал бросков · v2</p></div>
   </div>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('cast',this)">Бросок</button>
-    <button class="nav-tab" onclick="switchTab('manual',this)">Вручную</button>
     <button class="nav-tab" onclick="switchTab('journal',this)">Журнал</button>
     <button class="nav-tab" onclick="switchTab('stats',this)">Аналитика</button>
   </nav>
@@ -325,6 +324,10 @@ textarea{resize:vertical;}
 <!-- ══ JOURNAL ══ -->
 <div id="tab-journal" class="panel">
 <div class="container-wide">
+  <div id="expBox" style="margin-bottom:.9rem;">
+    <button class="btn btn-outline" onclick="exportJournal()" style="width:100%;">Экспорт журнала (копировать)</button>
+    <textarea id="expText" readonly style="display:none;width:100%;height:110px;margin-top:.6rem;font-size:.7rem;" onclick="this.select()"></textarea>
+  </div>
   <div class="j-toolbar">
     <input type="text" id="jSearch" placeholder="Поиск..." oninput="renderJournal()">
     <select id="jHexFilter" onchange="renderJournal()"><option value="">Все гексаграммы</option></select>
