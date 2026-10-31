@@ -230,13 +230,6 @@ textarea{resize:vertical;}
   <div id="castResult" style="display:none">
     <div class="hex-display" id="castHexD"></div>
 
-    <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap;">
-      <span class="autosave-badge">
-        <svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5 5.5-5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Бросок сохранён автоматически
-      </span>
-      <button class="btn btn-outline" style="padding:.3rem .9rem;font-size:.78rem;" onclick="resetCast()">Новый бросок</button>
-    </div>
 
     <div class="notes-section">
       <div class="notes-section-title">Заметки и интерпретация</div>
@@ -711,18 +704,18 @@ function shareText(pri,sec,lines,question){
 }
 function mountShare(cid,st){
   shareState[cid]=st;
+  let tb=document.getElementById(cid+'Text');
+  if(!tb){tb=document.createElement('div');tb.id=cid+'Text';document.getElementById(cid).insertAdjacentElement('afterend',tb);}
+  tb.innerHTML=ijTextHTML(st.pri,st.sec,st.lines);
   let box=document.getElementById(cid+'Share');
   if(!box){
     box=document.createElement('div');
     box.id=cid+'Share';
-    box.style.cssText='display:flex;gap:.5rem;justify-content:center;margin:-.3rem 0 1rem;flex-wrap:wrap;';
-    document.getElementById(cid).insertAdjacentElement('afterend',box);
+    box.style.cssText='display:flex;gap:.5rem;margin:0 0 1.2rem;flex-wrap:nowrap;';
+    tb.insertAdjacentElement('afterend',box);
   }
-  let tb=document.getElementById(cid+'Text');
-  if(!tb){tb=document.createElement('div');tb.id=cid+'Text';box.insertAdjacentElement('afterend',tb);}
-  tb.innerHTML=ijTextHTML(st.pri,st.sec,st.lines);
-  box.innerHTML=`<button class="btn btn-outline" style="padding:.4rem .9rem;font-size:.78rem;" onclick="shareCopy('${cid}')">Скопировать для Claude</button>
-    <button class="btn btn-outline" style="padding:.4rem .9rem;font-size:.78rem;" onclick="shareOpen('${cid}')">Открыть в Claude</button>`;
+  box.innerHTML=`<button class="btn btn-outline" style="flex:1;justify-content:center;padding:.55rem .5rem;font-size:.8rem;" onclick="shareCopy('${cid}')">Скопировать</button>
+    <button class="btn btn-outline" style="flex:1;justify-content:center;padding:.55rem .5rem;font-size:.8rem;" onclick="shareOpen('${cid}')">Открыть в Claude</button>`;
 }
 function currentShare(cid){
   const st=shareState[cid];if(!st)return '';
@@ -1013,7 +1006,7 @@ function renderJournal(){
         </div>
         <details class="ij-det"><summary>Текст оригинала</summary>${ijTextHTML(e.primary,e.secondary,e.lines)}</details>
         <div style="margin-top:.5rem;display:flex;gap:1rem;flex-wrap:wrap;">
-          <button class="btn-ghost" style="font-size:.75rem;color:var(--gold);padding:.3rem 0;" onclick="entryShareCopy('${e.id}')">Скопировать для Claude</button>
+          <button class="btn-ghost" style="font-size:.75rem;color:var(--gold);padding:.3rem 0;" onclick="entryShareCopy('${e.id}')">Скопировать</button>
           <button class="btn-ghost" style="font-size:.75rem;color:var(--gold);padding:.3rem 0;" onclick="entryShareOpen('${e.id}')">Открыть в Claude</button>
         </div>
       </div>
