@@ -215,7 +215,7 @@ textarea{resize:vertical;}
 <div id="tab-cast" class="panel active">
 <div class="container">
   <div class="mb">
-    <label class="fl">Вопрос к оракулу</label>
+    <label class="fl">Задай свой вопрос</label>
     <textarea id="castQuestion" rows="3" placeholder="Запиши свой вопрос или намерение перед броском..."></textarea>
   </div>
 
@@ -346,6 +346,10 @@ textarea{resize:vertical;}
   <div id="expBox" style="margin-top:1.4rem;padding-top:1rem;border-top:1px solid var(--border,#d8cdb8);">
     <button class="btn btn-outline" onclick="exportJournal()" style="width:100%;">Экспорт журнала (копировать)</button>
     <textarea id="expText" readonly style="display:none;width:100%;height:110px;margin-top:.6rem;font-size:.7rem;" onclick="this.select()"></textarea>
+    <div style="margin-top:1.2rem;font-size:.78rem;color:var(--ink-dim);line-height:1.5;">Импорт: вставь сюда экспорт журнала. Записи добавятся к текущим, повторы пропускаются.</div>
+    <textarea id="impText" placeholder="Вставь экспорт журнала" style="width:100%;height:90px;margin-top:.5rem;font-size:.72rem;"></textarea>
+    <button class="btn btn-primary" onclick="importJournal()" style="width:100%;margin-top:.5rem;justify-content:center;">Импортировать</button>
+    <div id="impResult" style="margin-top:.5rem;font-size:.8rem;color:var(--ink-mid);"></div>
   </div>
 </div>
 </div>
@@ -730,6 +734,24 @@ function copyText(t){
   const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
   document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}
   document.body.removeChild(ta);return Promise.resolve();
+}
+function importJournal(){
+  const res=document.getElementById('impResult');
+  const raw=document.getElementById('impText').value.trim();
+  if(!raw){res.textContent='Вставь текст экспорта в поле выше.';return;}
+  let arr;
+  try{arr=JSON.parse(raw);}catch(e){res.textContent='Это не похоже на экспорт журнала: текст скопирован не полностью.';return;}
+  if(arr&&!Array.isArray(arr)&&Array.isArray(arr.entries))arr=arr.entries;
+  if(!Array.isArray(arr)){res.textContent='Это не похоже на экспорт журнала.';return;}
+  const valid=arr.filter(e=>e&&e.id&&e.primary&&Array.isArray(e.lines));
+  const cur=load();
+  const have=new Set(cur.map(e=>String(e.id)));
+  const fresh=valid.filter(e=>!have.has(String(e.id))).map(e=>Object.assign({},e,{id:String(e.id)}));
+  const merged=cur.concat(fresh).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  try{save(merged);}catch(e){res.textContent='Не удалось сохранить: не хватает памяти браузера.';return;}
+  res.textContent='Добавлено записей: '+fresh.length+'. Уже были в журнале: '+(valid.length-fresh.length)+'. Пропущено как некорректные: '+(arr.length-valid.length)+'. Всего в журнале: '+merged.length+'.';
+  document.getElementById('impText').value='';
+  renderJournal();
 }
 function exportJournal(){
   const data=JSON.stringify(load());
