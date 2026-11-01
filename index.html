@@ -1132,7 +1132,7 @@ function renderStats(){
   const cutoff=new Date();cutoff.setHours(0,0,0,0);cutoff.setDate(cutoff.getDate()-13);
   const recent=entries.filter(e=>new Date(e.date)>=cutoff);
   const windowDays=Math.min(14,daysDiff);
-  const avgPerDay=(recent.length/windowDays).toFixed(1);
+  const avgPerDay=(total/daysDiff).toFixed(1);
   const stable=entries.filter(e=>e.lines&&!e.lines.some(l=>l.moving)).length;
 
   // Серии: бросок не позже 7 минут после предыдущего продолжает серию
@@ -1184,7 +1184,7 @@ function renderStats(){
     <div class="stats-grid">
       <div class="stat-card"><span class="stat-val">${total}</span><div class="stat-lbl">Бросков</div></div>
       <div class="stat-card"><span class="stat-val">${todayCount}</span><div class="stat-lbl">За сегодня</div></div>
-      <div class="stat-card"><span class="stat-val">${avgPerDay}</span><div class="stat-lbl">В среднем / день · 14 дн.</div></div>
+      <div class="stat-card"><span class="stat-val">${avgPerDay}</span><div class="stat-lbl">В среднем / день</div></div>
       <div class="stat-card"><span class="stat-val">${stable}</span><div class="stat-lbl">Стабильных</div></div>
     </div>
     <div class="stats-grid">
