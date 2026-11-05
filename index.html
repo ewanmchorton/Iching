@@ -224,6 +224,7 @@ textarea{resize:vertical;}
   </div>
 
   <button class="btn-cast" id="castBtn" onclick="castAll()">Бросить монеты</button>
+  <div id="castLimit" style="text-align:center;font-size:.75rem;color:var(--ink-dim);font-style:italic;margin:.5rem 0 0;"></div>
 
   <!-- Coin animation — 6 rows of 3 coins -->
   <div id="coinArea" style="display:none;margin-top:1rem;">
@@ -657,7 +658,43 @@ let castEntryId=null; // ID of auto-saved entry for current cast
 function rnd3(){return Math.random()<.5?3:2;}
 function throwLine(){const c=[rnd3(),rnd3(),rnd3()],s=c[0]+c[1]+c[2];return{value:s,yang:s===7||s===9,moving:s===6||s===9,coins:c};}
 
+// ══════════════════════════════════════
+// ЛИМИТ: не больше 3 серий в день (серия — броски с промежутком до 7 минут)
+// ══════════════════════════════════════
+const DAY_SERIES_LIMIT=3, SERIES_GAP_MS=7*60*1000;
+function castLimitState(){
+  const todayStr=new Date().toDateString();
+  const ts=load().map(e=>new Date(e.date)).filter(d=>!isNaN(d)&&d.toDateString()===todayStr).map(d=>d.getTime()).sort((a,b)=>a-b);
+  let series=0,last=0;
+  ts.forEach(t=>{if(!last||t-last>SERIES_GAP_MS)series++;last=t;});
+  const now=Date.now();
+  const inSeries=last&&now-last<=SERIES_GAP_MS;
+  const blocked=!inSeries&&series>=DAY_SERIES_LIMIT;
+  return {series,inSeries,blocked,leftMs:inSeries?SERIES_GAP_MS-(now-last):0};
+}
+function updateCastLimit(){
+  const btn=document.getElementById('castBtn'),note=document.getElementById('castLimit');
+  if(!btn||!note)return;
+  const st=castLimitState();
+  if(btn.textContent==='Бросаю...')return;
+  if(st.blocked){
+    btn.disabled=true;btn.textContent='На сегодня всё';
+    note.textContent='Три серии за день сделаны. Следующий бросок — завтра.';
+  }else{
+    btn.disabled=false;btn.textContent='Бросить монеты';
+    if(st.inSeries){
+      const m=Math.max(1,Math.ceil(st.leftMs/60000));
+      note.textContent=`Серия ${st.series} из ${DAY_SERIES_LIMIT} идёт — ещё ${m} мин.`;
+    }else{
+      note.textContent=`Серий сегодня: ${st.series} из ${DAY_SERIES_LIMIT}`;
+    }
+  }
+}
+setInterval(updateCastLimit,20000);
+setTimeout(updateCastLimit,300);
+
 async function castAll(){
+  if(castLimitState().blocked){updateCastLimit();return;}
   // Reset
   castEntryId=null;
   document.getElementById('castResult').style.display='none';
@@ -732,6 +769,7 @@ async function castAll(){
   renderHexDisp('castHexD',pri,sec,lines);
   document.getElementById('castResult').style.display='block';
   btn.disabled=false;btn.textContent='Бросить монеты';
+  updateCastLimit();
 
   // No AI interpretation in mobile version
 }
